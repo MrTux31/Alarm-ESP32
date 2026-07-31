@@ -1,4 +1,4 @@
-# ESP32 Alarm System
+# ESP32 Alarm System [WORK IN PROGRESS]
 
 An alarm system built for the ESP32 microcontroller. The repository contains the complete PlatformIO project at its root.
 
@@ -15,3 +15,6 @@ An alarm system built for the ESP32 microcontroller. The repository contains the
 
 ## Configuration
 System constants such as the default siren duration are defined in `include/constants.h`. You can adjust these values to comply with your local regulations.
+
+## Schematics
+The circuit schematics for the assembly will be available soon.

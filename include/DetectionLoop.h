@@ -33,6 +33,14 @@ public:
     void update();
 
     /**
+     * @brief Automatically re-enables the loop as soon as the physical sensor returns to a closed (secured) state.
+     * 
+     * This method is used for auto-exclusion (bypass) recovery, checking if a previously 
+     * disabled zone has been safely closed before the system re-arms.
+     */
+    void tryAutoReenable();
+
+    /**
      * Disables and bypasses the detection loop.
      * 
      * Stops the loop from scanning its physical sensor. Useful for auto-excluding 

@@ -16,7 +16,7 @@ const int PIN_LED_ARME = 26;
 
 const int PIN_RELAY_SIREN = 18;
 
-const unsigned long DEFAULT_SIREN_DURATION_MS = 180000; 
+const unsigned long DEFAULT_SIREN_DURATION_MS = 10000; 
 
 //TO DO : Définir une durée pour l'alarme
 const unsigned long SIREN_DURATION_MS = 180000; 

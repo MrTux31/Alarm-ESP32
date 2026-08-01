@@ -35,6 +35,7 @@ void AlarmManager::update(){
             for(DetectionLoop &loop : _loops){
                 //Updating each loop
                 loop.update();
+                loop.tryAutoReenable();
                 //A break in the loop has been detected (only for the enabled ones)
                 if(loop.isEnabled() && loop.isTriggered()){
                    loop.disable(); //Disable the faulty loop to bypass it when we RE-ARM the alarm after 
@@ -48,24 +49,32 @@ void AlarmManager::update(){
             //The siren duration has been reached
             if(millis() - _sirenActiveSince >= _sirenDurationMs){
                 _siren.turnOff();
-                bool canRearmAlarm = false;
-                //Check if there are any non-bypassed loops remaining.
+                // Re-include any previously bypassed zone if it has been closed PHYSICALLY
                 for(DetectionLoop &loop : _loops){
-                    if(loop.isEnabled()){ //Minimum one has been found
-                        canRearmAlarm = true;
-                        break;
-                    }
-                 }
+                    loop.tryAutoReenable();
+                }
                 //We can rearm the alarm
-                if(canRearmAlarm){
+                if(canRearmAlarm()){
                     _state = ARMED; //Alarm instantly rearmed
-                }else{ //No more loops available, we disarm
-                    disarmAlarm();
+                }else{ //No more loops available, we wait for loops to come back
+                    _state = STANDBY;
                 }
                 
             }
             break;
+        case STANDBY:
+            // Re-include any previously bypassed zone if it has been closed PHYSICALLY
+            for(DetectionLoop &loop : _loops){
+                    loop.tryAutoReenable();
+            }
+            //We can rearm the alarm
+            if(canRearmAlarm()){
+                _state = ARMED; //Alarm instantly rearmed
+            }
+            break;
+
     }
+        
  
 }
 
@@ -78,17 +87,29 @@ void AlarmManager::armAlarm(){
     
 }
 
+bool AlarmManager::canRearmAlarm(){
+    //Check if there are any non-bypassed loops remaining.
+    for(DetectionLoop &loop : _loops){
+        if(loop.isEnabled()){ //Minimum one has been found
+            return true;
+        }
+    }
+    return false;
+}
+
     
 void AlarmManager::disarmAlarm(){
     _state = DISARMED;
     _siren.turnOff();
-    resetAlarm();
+    for(DetectionLoop &loop : _loops){
+        loop.resetTrigger(); //Reset the trigger  for each loop
+        loop.enable(); //Reset the bypass 
+    }
 }
 
 void AlarmManager::resetAlarm(){
     for(DetectionLoop &loop : _loops){
         loop.resetTrigger(); //Reset the trigger 
-        loop.enable(); //Reset the bypass 
     }
 }
 

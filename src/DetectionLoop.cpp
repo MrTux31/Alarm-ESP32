@@ -12,11 +12,21 @@ void DetectionLoop::init(){
 
 void DetectionLoop::update(){
     //The physical opening of the loop is detected
-    if(isPhysicalOpen() && !_wasOpened){
+    if(isEnabled() && isPhysicalOpen() && !_wasOpened){
         _openedSince = millis();
         _wasOpened = true;
     }
 
+    
+
+}
+
+void DetectionLoop::tryAutoReenable(){
+    //Automatic reactivation of the loop if it has been closed and deactivated
+    if(!isPhysicalOpen() && !isEnabled()){
+        enable();
+        resetTrigger();
+    }
 }
 
 void DetectionLoop::disable(){

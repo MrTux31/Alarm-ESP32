@@ -6,7 +6,7 @@
 #include <vector>
 
 
-RelaySiren siren(PIN_RELAY_SIREN);
+RelaySiren siren(PIN_RELAY_SIREN, false);
 //Creating loops
 DetectionLoop porte(PIN_LOOP_1,"Porte entree",20000);
 DetectionLoop fenetre1(PIN_LOOP_2,"Fenetre 1");
@@ -24,7 +24,7 @@ void setup() {
 
   //Initialization
   manager.init();
-  manager.setArmingDelay(10000);
+  manager.setArmingDelay(20000);
   //Arming the alarm
   manager.armAlarm();
 

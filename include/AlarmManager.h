@@ -7,13 +7,14 @@
 #include <ISiren.h>
 #include <constants.h>
 
-enum State { DISARMED, ARMING, ARMED, ENTRY_DELAY, SIREN_ACTIVE };
+enum State { DISARMED, ARMING, ARMED, SIREN_ACTIVE, STANDBY };
 
 class AlarmManager{
 
 private:
     ISiren& _siren; //reference to the implementation of ISiren
     State _state; // The current state of the alarm
+    
     std::vector<DetectionLoop> &_loops; //Detection loops for the alarm
     unsigned long _sirenDurationMs;
     unsigned long _sirenActiveSince; //The moment the siren turned active
@@ -23,8 +24,12 @@ private:
     
     unsigned long _armingSince = 0; //The moment the alarm arming process began
 
-    /**
-     * Resets the state of each loop.
+     /**
+     * @brief Clears the event memory of all remaining active zones.
+     * 
+     * Resets the internal triggers and timestamps for all loops without affecting 
+     * their bypass status. This ensures that non-faulty zones start fresh 
+     * when the system automatically returns to surveillance.
      */
     void resetAlarm(); 
 
@@ -32,6 +37,8 @@ private:
      * Triggers the alarm siren
      */
     void triggerSiren();
+
+    bool canRearmAlarm();
 public:
     AlarmManager(ISiren& siren ,std::vector<DetectionLoop> &loops, unsigned long sirenDurationMs = DEFAULT_SIREN_DURATION_MS); 
 
@@ -40,6 +47,7 @@ public:
      */
     void init();
 
+
     void update();
     
     /**
@@ -47,8 +55,12 @@ public:
      */
     void armAlarm();
 
-    /**
-     * Disarms the alarm system.
+   /**
+     * @brief Disarms the system and performs a full security reset.
+     * 
+     * Stops the siren, changes the state to DISARMED, clears the event memory 
+     * of all loops, and reenables any previously bypassed (disabled) zones 
+     * to prepare for the next arming cycle.
      */
     void disarmAlarm();
 
@@ -65,7 +77,5 @@ public:
     State getCurrentState();
     
 };
-
-
 
 #endif

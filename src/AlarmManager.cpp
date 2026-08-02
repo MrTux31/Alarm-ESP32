@@ -121,7 +121,8 @@ void AlarmManager::beginIntrusion(){
 void AlarmManager::triggerSirenManually(bool turnOn){
     _isSirenTriggeredManually = turnOn;
     if(turnOn){ _siren.turnOn(); }
-    else{ _siren.turnOff(); }    
+    // Prevent manual override from silencing the siren during an active intrusion sequence
+    else if(_state != INTRUSION){ _siren.turnOff(); }    
 }
 
 bool AlarmManager::isSirenActive(){

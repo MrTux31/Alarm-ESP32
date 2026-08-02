@@ -19,7 +19,6 @@ void AlarmManager::init(){
 void AlarmManager::update(){
     
     switch (_state){
-
         case DISARMED:
             //Waiting for armement 
             break;
@@ -32,51 +31,42 @@ void AlarmManager::update(){
             break;
         
         case ARMED:
+            updateAllLoops();
             for(DetectionLoop &loop : _loops){
-                //Updating each loop
-                loop.update();
-                loop.tryAutoReenable();
                 //A break in the loop has been detected (only for the enabled ones)
                 if(loop.isEnabled() && loop.isTriggered()){
-                   loop.disable(); //Disable the faulty loop to bypass it when we RE-ARM the alarm after 
-                   triggerSiren();
-                   break;
+                    loop.disable(); //Disable the faulty loop to bypass it when we RE-ARM the alarm after 
+                    beginIntrusion();
+                    break;
                 }
             }
             break;
         
-        case SIREN_ACTIVE:
-            //The siren duration has been reached
-            if(millis() - _sirenActiveSince >= _sirenDurationMs){
-                _siren.turnOff();
-                // Re-include any previously bypassed zone if it has been closed PHYSICALLY
-                for(DetectionLoop &loop : _loops){
-                    loop.tryAutoReenable();
+        case INTRUSION:
+            if(!_isSirenTriggeredManually){ //Only process the automatic siren timeout if the user has not overridden it manually
+                //The siren duration has been reached
+                if(millis() - _intrusionStartedAt  >= _sirenDurationMs){
+                    _siren.turnOff();
+                    // Re-include any previously bypassed zone if it has been closed PHYSICALLY
+                    updateAllLoops();
+
+                    //We can rearm the alarm
+                    if(canRearmAlarm()){_state = ARMED; }  //Alarm instantly rearmed
+                    else{_state = STANDBY;} //No more loops available, we wait for loops to come back
                 }
-                //We can rearm the alarm
-                if(canRearmAlarm()){
-                    _state = ARMED; //Alarm instantly rearmed
-                }else{ //No more loops available, we wait for loops to come back
-                    _state = STANDBY;
-                }
-                
             }
             break;
+
         case STANDBY:
-            // Re-include any previously bypassed zone if it has been closed PHYSICALLY
-            for(DetectionLoop &loop : _loops){
-                    loop.tryAutoReenable();
-            }
+            //Updating to try to Re-include any previously bypassed zone if it has been closed PHYSICALLY
+            updateAllLoops();
             //We can rearm the alarm
             if(canRearmAlarm()){
                 _state = ARMED; //Alarm instantly rearmed
             }
             break;
-
     }
-        
- 
-}
+} 
 
 
 void AlarmManager::armAlarm(){
@@ -86,6 +76,14 @@ void AlarmManager::armAlarm(){
     }
     
 }
+
+void AlarmManager::updateAllLoops() {
+    for(DetectionLoop &loop : _loops) {
+        loop.update();
+        loop.tryAutoReenable();
+    }
+}
+
 
 bool AlarmManager::canRearmAlarm(){
     //Check if there are any non-bypassed loops remaining.
@@ -97,14 +95,14 @@ bool AlarmManager::canRearmAlarm(){
     return false;
 }
 
-    
 void AlarmManager::disarmAlarm(){
     _state = DISARMED;
+    _isSirenTriggeredManually = false;
     _siren.turnOff();
     for(DetectionLoop &loop : _loops){
         loop.resetTrigger(); //Reset the trigger  for each loop
         loop.enable(); //Reset the bypass 
-    }
+    }     
 }
 
 void AlarmManager::resetAlarm(){
@@ -113,15 +111,21 @@ void AlarmManager::resetAlarm(){
     }
 }
 
-void AlarmManager::triggerSiren(){
+void AlarmManager::beginIntrusion(){
+    _state = INTRUSION;
     //Beginning of the siren triggering
-    _state = SIREN_ACTIVE; 
     _siren.turnOn();
-    _sirenActiveSince = millis(); //Saving the start of the triggering
+    _intrusionStartedAt = millis(); //Saving the start of the triggering
+}
+
+void AlarmManager::triggerSirenManually(bool turnOn){
+    _isSirenTriggeredManually = turnOn;
+    if(turnOn){ _siren.turnOn(); }
+    else{ _siren.turnOff(); }    
 }
 
 bool AlarmManager::isSirenActive(){
-    return _state == SIREN_ACTIVE;
+    return _siren.isActive();
 }
 
 void AlarmManager::setSirenDuration(unsigned long durationMs){
@@ -138,7 +142,7 @@ void AlarmManager::setEntryDelay(unsigned long delayMs){
     }
 }
 
-State AlarmManager::getCurrentState(){
+SystemState AlarmManager::getCurrentState(){
     return _state;
 }
 

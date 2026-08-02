@@ -13,13 +13,13 @@ class RelaySiren : public ISiren{
 private:
     int _pin;
     bool _activeLow;
-    bool _isRinging;
+    bool _isActive;
 
 public:
     RelaySiren(int pin, bool activeLow = true); //Active low if the relay activates on a LOW state 
 
     void init() override;
-    bool isRinging() override;
+    bool isActive() override;
     void turnOn() override;
     void turnOff() override;
 

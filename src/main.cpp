@@ -5,19 +5,22 @@
 #include <constants.h>
 #include <vector>
 
-
+//Creating our siren
 RelaySiren siren(PIN_RELAY_SIREN, false);
+
 //Creating loops
-DetectionLoop porte(PIN_LOOP_1,"Porte entree",20000);
-DetectionLoop fenetre1(PIN_LOOP_2,"Fenetre 1");
-DetectionLoop fenetre2(PIN_LOOP_3,"Fenetre 2");
-DetectionLoop fenetre3(PIN_LOOP_4,"Fenetre 3");
-std::vector<DetectionLoop> loops = {porte,fenetre1,fenetre2,fenetre3};
+DetectionLoop door(PIN_LOOP_1,"Main door",20000);
+DetectionLoop window1(PIN_LOOP_2,"Window 1");
+DetectionLoop window2(PIN_LOOP_3,"Window 2");
+DetectionLoop window3(PIN_LOOP_4,"Window 3");
+
+//Group all the loops together
+std::vector<DetectionLoop> loops = {door,window1,window2,window3};
 
 //Creating the manager
 AlarmManager manager(siren,loops);
 
-State currentState;
+SystemState currentState;
 
 void setup() {
   Serial.begin(115200);
@@ -34,26 +37,24 @@ void loop() {
   manager.update();
   currentState = manager.getCurrentState();
 
-
   //Console tests
 
   switch (currentState)
   {
-  case  DISARMED:
-    Serial.println("Disarmed");
-    break;
-  case  ARMING:
-    Serial.println("Arming");
-    break;
-  case  ARMED:
-    Serial.println("Armed");
-    break;
-  case  SIREN_ACTIVE:
-    Serial.println("SIREN ACTIVE !!!");
-    break;
-  default:
-    break;
-  }
-
+    case  DISARMED:
+      Serial.println("Disarmed");
+      break;
+    case  ARMING:
+      Serial.println("Arming");
+      break;
+    case  ARMED:
+      Serial.println("Armed");
+      break;
+    case INTRUSION:
+      Serial.println("INTRUSION DETECTED !!!");
+      break;
+    default:
+      break;
+    }
 }
 

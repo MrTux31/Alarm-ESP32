@@ -9,7 +9,7 @@ public:
 
     virtual void init() = 0;
 
-    virtual bool isRinging() = 0;
+    virtual bool isActive() = 0;
 
     virtual void turnOn() = 0;
 

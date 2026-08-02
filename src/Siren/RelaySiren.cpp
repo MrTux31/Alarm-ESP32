@@ -3,7 +3,7 @@
 RelaySiren::RelaySiren(int pin, bool activeLow){
     _pin = pin;
     _activeLow = activeLow;
-    _isRinging = false;
+    _isActive = false;
 }
 
 void RelaySiren::init(){
@@ -11,21 +11,21 @@ void RelaySiren::init(){
    turnOff();
 }
 
-bool RelaySiren::isRinging(){
-    return _isRinging;
+bool RelaySiren::isActive(){
+    return _isActive;
 }
 
 void RelaySiren::turnOn(){
-    if(!_isRinging){
+    if(!_isActive){
         digitalWrite(_pin, _activeLow ? LOW : HIGH);
-        _isRinging = true;
+        _isActive = true;
     }
     
 }
 
 void RelaySiren::turnOff(){
     digitalWrite(_pin, _activeLow ? HIGH : LOW);
-    _isRinging = false;
+    _isActive = false;
     
     
 }

@@ -13,6 +13,18 @@ void AlarmManager::init(){
   //Initializing each loop
   for(DetectionLoop &loop : _loops){
     loop.init();
+
+    //Callback definition for the loop when triggered
+    loop.onTrigger([this](DetectionLoop* triggeredLoop) {//This callback is triggered when a break in the loop has been detected
+            if (_state == ARMED) {
+                beginIntrusion();
+                //Disable the faulty loop to bypass it when we RE-ARM the alarm after 
+                triggeredLoop->disable();
+            }else if (_state == INTRUSION){
+                //Disable loops triggered DURING the intrusion (we don't want them to trigger the siren again)
+                triggeredLoop->disable();
+            }
+        });
   }
 }
 
@@ -32,14 +44,7 @@ void AlarmManager::update(){
         
         case ARMED:
             updateAllLoops();
-            for(DetectionLoop &loop : _loops){
-                //A break in the loop has been detected (only for the enabled ones)
-                if(loop.isEnabled() && loop.isTriggered()){
-                    loop.disable(); //Disable the faulty loop to bypass it when we RE-ARM the alarm after 
-                    beginIntrusion();
-                    break;
-                }
-            }
+            //If a break is detected in the loop the callback defined in init() takes over.
             break;
         
         case INTRUSION:
@@ -68,7 +73,6 @@ void AlarmManager::update(){
     }
 } 
 
-
 void AlarmManager::armAlarm(){
     if(_state == DISARMED){
         _state = ARMING; //Start of the alarm arming procedure
@@ -83,7 +87,6 @@ void AlarmManager::updateAllLoops() {
         loop.tryAutoReenable();
     }
 }
-
 
 bool AlarmManager::canRearmAlarm(){
     //Check if there are any non-bypassed loops remaining.
@@ -119,14 +122,32 @@ void AlarmManager::beginIntrusion(){
 }
 
 void AlarmManager::triggerSirenManually(bool turnOn){
-    _isSirenTriggeredManually = turnOn;
-    if(turnOn){ _siren.turnOn(); }
+    if(turnOn && !_isSirenTriggeredManually){
+        _siren.turnOn();
+        _isSirenTriggeredManually = true; 
+    }
     // Prevent manual override from silencing the siren during an active intrusion sequence
-    else if(_state != INTRUSION){ _siren.turnOff(); }    
+    else if(!turnOn && _state != INTRUSION){ 
+        _siren.turnOff(); }    
+}
+
+bool AlarmManager::isSirenTriggeredManually(){
+    return _isSirenTriggeredManually;
 }
 
 bool AlarmManager::isSirenActive(){
     return _siren.isActive();
+}
+
+std::vector<DetectionLoop*> AlarmManager::getTriggeredLoops(){
+    std::vector<DetectionLoop*> triggeredLoops = {};
+    for(DetectionLoop &loop : _loops){
+        if(loop.isTriggered()){
+            triggeredLoops.push_back(&loop);
+        }
+    }
+    return triggeredLoops;
+
 }
 
 void AlarmManager::setSirenDuration(unsigned long durationMs){

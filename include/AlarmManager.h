@@ -17,6 +17,7 @@ private:
     bool _isSirenTriggeredManually = false; //If the user manually triggers the siren
 
     std::vector<DetectionLoop> &_loops; //Detection loops for the alarm
+
     unsigned long _sirenDurationMs;  //The maximum duration for the siren (when not triggered manually)
     unsigned long _intrusionStartedAt ; //The moment the intrusion began and the siren turned active
 
@@ -49,8 +50,6 @@ private:
      * inputs and automatically re-enable any secured zones.
      */
     void updateAllLoops();
-
-
     bool canRearmAlarm();
 public:
     AlarmManager(ISiren& siren ,std::vector<DetectionLoop> &loops, unsigned long sirenDurationMs = DEFAULT_SIREN_DURATION_MS); 
@@ -59,7 +58,6 @@ public:
      * Initializes each component of the alarm
      */
     void init();
-
 
     void update();
     
@@ -87,15 +85,23 @@ public:
      */
     void triggerSirenManually(bool turnOn);
 
+    bool isSirenTriggeredManually();
 
     bool isSirenActive();
 
-    /* @brief Sets the siren/alarm duration in milliseconds.
+    /**
+     * @brief Retrieves all loops that were triggered during the current intrusion
+     */
+    std::vector<DetectionLoop*> getTriggeredLoops();
+
+    /** 
+    * @brief Sets the siren/alarm duration in milliseconds.
     * @param durationMs The duration in milliseconds.
     */
     void setSirenDuration(unsigned long durationMs);
 
     void setArmingDelay(unsigned long delayMs);
+    
     void setEntryDelay(unsigned long delayMs);
 
     SystemState getCurrentState();

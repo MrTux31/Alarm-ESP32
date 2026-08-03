@@ -8,6 +8,9 @@ private:
     String _name;
     uint8_t _mode;
     bool _isEnabled = true; // True if the loop is active, false if it is bypassed/excluded
+    
+    using TriggerCallback = std::function<void(DetectionLoop*)>;
+    TriggerCallback _onTriggerCb = nullptr; //The pointer to the callback function
 
     unsigned long _delayMs; //Wait time before considering the loop truly open
     unsigned long _openedSince; //Timestamp when the loop was physically opened
@@ -25,6 +28,13 @@ public:
     DetectionLoop(int pin, String name, unsigned long delayMs = 0 ,uint8_t mode = INPUT_PULLUP);
     
     void init();
+
+    /**
+     * @brief Registers a callback function to be executed when the loop is triggered.
+     * 
+     * @param callback The function to execute, passing a pointer to this DetectionLoop.
+     */
+    void onTrigger(TriggerCallback callback);
 
     /**
      * Detects the physical opening of the loop 

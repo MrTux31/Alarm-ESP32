@@ -15,9 +15,12 @@ void DetectionLoop::update(){
     if(isEnabled() && isPhysicalOpen() && !_wasOpened){
         _openedSince = millis();
         _wasOpened = true;
-    }
 
-    
+        // Notify the manager/observers that this loop has been triggered
+        if (_onTriggerCb != nullptr) {
+            _onTriggerCb(this);
+        }
+    }
 
 }
 
@@ -27,6 +30,10 @@ void DetectionLoop::tryAutoReenable(){
         enable();
         resetTrigger();
     }
+}
+
+void DetectionLoop::onTrigger(TriggerCallback callback) {
+    _onTriggerCb = callback; // On enregistre la fonction donnée par le manager
 }
 
 void DetectionLoop::disable(){

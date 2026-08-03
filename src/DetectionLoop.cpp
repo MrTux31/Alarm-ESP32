@@ -15,7 +15,9 @@ void DetectionLoop::update(){
     if(isEnabled() && isPhysicalOpen() && !_wasOpened){
         _openedSince = millis();
         _wasOpened = true;
+    }
 
+    if(isTriggered()){
         // Notify the manager/observers that this loop has been triggered
         if (_onTriggerCb != nullptr) {
             _onTriggerCb(this);

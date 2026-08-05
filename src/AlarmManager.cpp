@@ -31,7 +31,6 @@ void AlarmManager::update(){
             //The waiting period before arming has been exceeded
             if(millis() - _armingSince >= _armingDelayMs){
                 _state = ARMED; //Alarm is now ARMED (and ready)
-                //resetTriggers() ??
             } 
             break;
         

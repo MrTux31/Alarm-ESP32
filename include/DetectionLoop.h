@@ -1,21 +1,33 @@
 #ifndef DETECTION_LOOP_H
 #define DETECTION_LOOP_H
 #include <Arduino.h>
-class DetectionLoop
-{
+#include <ISubject.h>
+#include <unordered_map>
+#include <vector>
+#include <IObserver.h>
+
+enum LoopEvent{
+    TRIGGERED,
+    PHYSICALLY_OPEN
+};
+
+class DetectionLoop : public ISubject<DetectionLoop,LoopEvent>{
 private:
+    //Hash maps for observers
+    std::unordered_map<LoopEvent, std::vector<IObserver<DetectionLoop, LoopEvent>*>> observers;
+
     int _pin;
     String _name;
     uint8_t _mode;
     bool _isEnabled = true; // True if the loop is active, false if it is bypassed/excluded
     
-    using TriggerCallback = std::function<void(DetectionLoop*)>;
-    TriggerCallback _onTriggerCb = nullptr; //The pointer to the callback function
-
     unsigned long _delayMs; //Wait time before considering the loop truly open
     unsigned long _openedSince; //Timestamp when the loop was physically opened
+    
+    //Opened = Physically open loop
+    //Triggered = Loop considered truly open after the time delay has been accounted for
     bool _wasOpened; //Indicates whether the loop was open during the previous check
-
+    bool _wasTriggered;
 public:
     /** 
     * Class constructor
@@ -28,13 +40,6 @@ public:
     DetectionLoop(int pin, String name, unsigned long delayMs = 0 ,uint8_t mode = INPUT_PULLUP);
     
     void init();
-
-    /**
-     * @brief Registers a callback function to be executed when the loop is triggered.
-     * 
-     * @param callback The function to execute, passing a pointer to this DetectionLoop.
-     */
-    void onTrigger(TriggerCallback callback);
 
     /**
      * Detects the physical opening of the loop 
@@ -100,9 +105,12 @@ public:
     String getName();
     void setName(String name);
 
-    
+
+    //Overrided methods for the observer pattern/////
+    void subscribe(LoopEvent event, IObserver<DetectionLoop, LoopEvent>* observer) override;
+    void unsubscribe(LoopEvent event, IObserver<DetectionLoop, LoopEvent>* observer) override;
+    void notify(LoopEvent event) override;
 
 
 };
-
 #endif

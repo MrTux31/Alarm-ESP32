@@ -7,26 +7,18 @@ AlarmManager::AlarmManager(ISiren& siren , std::vector<DetectionLoop> &loops, un
 }
 
 void AlarmManager::init(){
-  //Initializing the siren
-  _siren.init();
+    //Initializing the siren
+    _siren.init();
 
-  //Initializing each loop
-  for(DetectionLoop &loop : _loops){
-    loop.init();
-
-    //Callback definition for the loop when triggered
-    loop.onTrigger([this](DetectionLoop* triggeredLoop) {//This callback is triggered when a break in the loop has been detected
-            if (_state == ARMED) {
-                beginIntrusion();
-                //Disable the faulty loop to bypass it when we RE-ARM the alarm after 
-                triggeredLoop->disable();
-            }else if (_state == INTRUSION){
-                //Disable loops triggered DURING the intrusion (we don't want them to trigger the siren again)
-                triggeredLoop->disable();
-            }
-        });
-  }
+    //Initializing each loop
+    for(DetectionLoop &loop : _loops){
+        loop.init();
+        //Subscribing to the events (for the observer pattern)
+        loop.subscribe(TRIGGERED, this);
+        loop.subscribe(PHYSICALLY_OPEN, this);
+    }
 }
+
 
 void AlarmManager::update(){
     
@@ -39,12 +31,13 @@ void AlarmManager::update(){
             //The waiting period before arming has been exceeded
             if(millis() - _armingSince >= _armingDelayMs){
                 _state = ARMED; //Alarm is now ARMED (and ready)
+                //resetTriggers() ??
             } 
             break;
         
         case ARMED:
             updateAllLoops();
-            //If a break is detected in the loop the callback defined in init() takes over.
+            //If a break is break is detected, this observer receives the event (in the second update method).
             break;
         
         case INTRUSION:
@@ -72,6 +65,25 @@ void AlarmManager::update(){
             break;
     }
 } 
+
+void AlarmManager::update(DetectionLoop* loop, LoopEvent event){
+    if(event == TRIGGERED){
+        if (_state == ARMED) {
+                //Disable the faulty loop to bypass it when we RE-ARM the alarm after 
+                loop->disable();
+                beginIntrusion();
+                
+        }
+    }
+    if(event == PHYSICALLY_OPEN){
+        if (_state == INTRUSION){
+                //Disable loops triggered DURING the intrusion (we don't want them to trigger the siren again)
+                loop->disable();
+        }
+    }
+    
+}
+
 
 void AlarmManager::armAlarm(){
     if(_state == DISARMED){
@@ -115,6 +127,12 @@ void AlarmManager::resetAlarm(){
 }
 
 void AlarmManager::beginIntrusion(){
+    // Freeze all currently open zones to prevent them from re-triggering the alarm after this cycle ends
+    for(DetectionLoop &loop : _loops){
+        if(loop.isPhysicalOpen()){
+            loop.disable();
+        }
+    }
     _state = INTRUSION;
     //Beginning of the siren triggering
     _siren.turnOn();

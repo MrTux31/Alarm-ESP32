@@ -6,10 +6,10 @@
 #include <DetectionLoop.h>
 #include <ISiren.h>
 #include <constants.h>
-
+#include <IObserver.h>
 enum SystemState { DISARMED, ARMING, ARMED, INTRUSION, STANDBY };
 
-class AlarmManager{
+class AlarmManager : public IObserver<DetectionLoop,LoopEvent>{
 
 private:
     ISiren& _siren; //reference to the implementation of ISiren
@@ -106,6 +106,9 @@ public:
 
     SystemState getCurrentState();
     
+    //Overrided method for the Observer pattern
+    void update(DetectionLoop* loop, LoopEvent event) override;
+
 };
 
 #endif

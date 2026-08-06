@@ -7,52 +7,15 @@
 #include <ISiren.h>
 #include <constants.h>
 #include <IObserver.h>
-enum SystemState { DISARMED, ARMING, ARMED, INTRUSION, STANDBY };
 
-class AlarmManager : public IObserver<DetectionLoop,LoopEvent>{
+enum AlarmManagerEvent { ALARM_ARMED, ALARM_ARMING, ALARM_DISARMED, ALARM_INTRUSION };
 
-private:
-    ISiren& _siren; //reference to the implementation of ISiren
-    SystemState _state; // The current state of the alarm
-    bool _isSirenTriggeredManually = false; //If the user manually triggers the siren
+class AlarmManager : public ISubject<AlarmManager,AlarmManagerEvent> ,IObserver<DetectionLoop,LoopEvent>{
 
-    std::vector<DetectionLoop> &_loops; //Detection loops for the alarm
-
-    unsigned long _sirenDurationMs;  //The maximum duration for the siren (when not triggered manually)
-    unsigned long _intrusionStartedAt ; //The moment the intrusion began and the siren turned active
-
-    unsigned long _armingDelayMs = 0; //Waiting time before the alarm is armed,
-                             //allowing the owner to leave
-    
-    unsigned long _armingSince = 0; //The moment the alarm arming process began
-
-     /**
-     * @brief Clears the event memory of all remaining active zones.
-     * 
-     * Resets the internal triggers and timestamps for all loops without affecting 
-     * their bypass status. This ensures that non-faulty zones start fresh 
-     * when the system automatically returns to surveillance.
-     */
-    void resetAlarm(); 
-
-    /**
-     * @brief Initiates the intrusion alert sequence.
-     * 
-     * Activates the siren, records the precise start time of the event,
-     * and prepares the system to monitor the maximum legal duration of the alarm.
-     */
-    void beginIntrusion();
-
-    /**
-     * @brief Refreshes sensor states and processes auto-recovery for all loops.
-     * 
-     * Iterates through the entire collection of detection loops to scan physical 
-     * inputs and automatically re-enable any secured zones.
-     */
-    void updateAllLoops();
-    bool canRearmAlarm();
 public:
-    AlarmManager(ISiren& siren ,std::vector<DetectionLoop> &loops, unsigned long sirenDurationMs = DEFAULT_SIREN_DURATION_MS); 
+    enum SystemState { DISARMED, ARMING, ARMED, INTRUSION, STANDBY };
+
+    AlarmManager(ISiren& siren ,std::vector<DetectionLoop*> &loops, unsigned long sirenDurationMs = DEFAULT_SIREN_DURATION_MS); 
 
     /**
      * Initializes each component of the alarm
@@ -106,8 +69,62 @@ public:
 
     SystemState getCurrentState();
     
-    //Overrided method for the Observer pattern
+    //Overrided method for the Subject
     void update(DetectionLoop* loop, LoopEvent event) override;
+
+    //Overrided methods for the Observer/////
+    void subscribe(AlarmManagerEvent event, IObserver<AlarmManager, AlarmManagerEvent>* observer) override;
+    void unsubscribe(AlarmManagerEvent event, IObserver<AlarmManager, AlarmManagerEvent>* observer) override;
+    
+
+private:
+     //Hash maps for observers
+    std::unordered_map<AlarmManagerEvent, std::vector<IObserver<AlarmManager, AlarmManagerEvent>*>> observers;
+
+    ISiren& _siren; //reference to the implementation of ISiren
+    SystemState _state; // The current state of the alarm
+    bool _isSirenTriggeredManually = false; //If the user manually triggers the siren
+
+    std::vector<DetectionLoop*> &_loops; //Detection loops for the alarm
+
+    unsigned long _sirenDurationMs;  //The maximum duration for the siren (when not triggered manually)
+    unsigned long _intrusionStartedAt ; //The moment the intrusion began and the siren turned active
+
+    unsigned long _armingDelayMs = 0; //Waiting time before the alarm is armed,
+                             //allowing the owner to leave
+    
+    unsigned long _armingSince = 0; //The moment the alarm arming process began
+
+     /**
+     * @brief Clears the event memory of all remaining active zones.
+     * 
+     * Resets the internal triggers and timestamps for all loops without affecting 
+     * their bypass status. This ensures that non-faulty zones start fresh 
+     * when the system automatically returns to surveillance.
+     */
+    void resetAlarm(); 
+
+    /**
+     * @brief Initiates the intrusion alert sequence.
+     * 
+     * Activates the siren, records the precise start time of the event,
+     * and prepares the system to monitor the maximum legal duration of the alarm.
+     */
+    void beginIntrusion();
+
+    /**
+     * @brief Refreshes sensor states and processes auto-recovery for all loops.
+     * 
+     * Iterates through the entire collection of detection loops to scan physical 
+     * inputs and automatically re-enable any secured zones.
+     */
+    void updateAllLoops();
+    bool canRearmAlarm();
+
+    //Method for Observer 
+    void notify(AlarmManagerEvent event) override;
+    
+
 
 };
 

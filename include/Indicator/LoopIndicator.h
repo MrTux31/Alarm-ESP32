@@ -1,24 +1,22 @@
 #ifndef LOOP_INDICATOR_H
 #define LOOP_INDICATOR_H
 #include <Arduino.h>
-#include <Led.h>
+#include <devices/Led.h>
 #include <IObserver.h>
-#include <DetectionLoop.h>
+#include <devices/DetectionLoop.h>
 #include <AlarmManager.h>
+#include <BaseLedIndicator.h>
 
-class LoopIndicator : public IObserver<DetectionLoop, LoopEvent>, public IObserver<AlarmManager, AlarmManagerEvent>{
+class LoopIndicator : public BaseLedIndicator, public IObserver<DetectionLoop, LoopEvent>, public IObserver<AlarmManager, AlarmManagerEvent>{
 
 private:
-    Led _led;
-    DetectionLoop &_loop;
+    AlarmManager &_alarmManager;
 
 public:
-    LoopIndicator(DetectionLoop &loop, int pinLed);
+    LoopIndicator(int pinLed, AlarmManager &alarmManager);
 
-    void init();
-
-    void update();
-
+    using BaseLedIndicator::update;
+    
     //Update method for the observation of the loop
     void update(DetectionLoop *subject, LoopEvent event) override;
     

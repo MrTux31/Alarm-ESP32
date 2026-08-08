@@ -1,4 +1,4 @@
-#include <Siren/RelaySiren.h>
+#include <devices/Siren/RelaySiren.h>
 
 RelaySiren::RelaySiren(int pin, bool activeLow){
     _pin = pin;

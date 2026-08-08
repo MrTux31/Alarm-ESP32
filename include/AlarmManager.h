@@ -3,12 +3,12 @@
 #define ALARM_MANAGER_H
 #include <Arduino.h>
 #include <vector>
-#include <DetectionLoop.h>
+#include <devices/DetectionLoop.h>
 #include <ISiren.h>
 #include <constants.h>
 #include <IObserver.h>
 
-enum AlarmManagerEvent { ALARM_ARMED, ALARM_ARMING, ALARM_DISARMED, ALARM_INTRUSION };
+enum AlarmManagerEvent { ALARM_ARMED, ALARM_ARMING, ALARM_DISARMED, ALARM_INTRUSION, ALARM_STANDBY };
 
 class AlarmManager : public ISubject<AlarmManager,AlarmManagerEvent> ,IObserver<DetectionLoop,LoopEvent>{
 
@@ -23,7 +23,11 @@ public:
     void init();
 
     void update();
-    
+    /**
+     * @brief Allows toggling the alarm state while notifying its observers.
+     */
+    void toggleState(SystemState newState);
+
     /**
      * Arms the alarm system.
      */

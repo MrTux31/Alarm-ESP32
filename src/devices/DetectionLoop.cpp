@@ -1,4 +1,4 @@
-#include <DetectionLoop.h>
+#include <devices/DetectionLoop.h>
 #include <algorithm>
 
 DetectionLoop::DetectionLoop(int pin, String name, unsigned long delayMs ,uint8_t mode) 
@@ -17,13 +17,13 @@ void DetectionLoop::update(){
         _wasOpened = true;
         // Notify the manager/observers that this loop has been opened (physically)
         notify(PHYSICALLY_OPEN);
-        Serial.println("OUVERT");
     }
 
     if(isEnabled() && isTriggered() && !_wasTriggered){
         _wasTriggered = true;
         // Notify the manager/observers that this loop has been triggered
         notify(TRIGGERED);
+
     }
 
 }

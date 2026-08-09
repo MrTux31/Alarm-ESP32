@@ -28,6 +28,10 @@ private:
     //Triggered = Loop considered truly open after the time delay has been accounted for
     bool _wasOpened; //Indicates whether the loop was open during the previous check
     bool _wasTriggered;
+
+    //Method for observer pattern
+    void notify(LoopEvent event) override;
+
 public:
     /** 
     * Class constructor
@@ -109,7 +113,7 @@ public:
     //Overrided methods for the observer pattern/////
     void subscribe(LoopEvent event, IObserver<DetectionLoop, LoopEvent>* observer) override;
     void unsubscribe(LoopEvent event, IObserver<DetectionLoop, LoopEvent>* observer) override;
-    void notify(LoopEvent event) override;
+    
 
 
 };

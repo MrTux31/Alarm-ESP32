@@ -1,7 +1,7 @@
 #include <AlarmManager.h>
 
 
-AlarmManager::AlarmManager(ISiren& siren , std::vector<DetectionLoop> &loops, unsigned long sirenDurationMs) : _siren(siren),  _sirenDurationMs(sirenDurationMs)
+AlarmManager::AlarmManager(ISiren& siren , std::vector<DetectionLoop*> &loops, unsigned long sirenDurationMs) : _siren(siren),  _sirenDurationMs(sirenDurationMs)
 , _loops(loops), _state(DISARMED) {
 
 }
@@ -11,11 +11,11 @@ void AlarmManager::init(){
     _siren.init();
 
     //Initializing each loop
-    for(DetectionLoop &loop : _loops){
-        loop.init();
+    for(DetectionLoop* &loop : _loops){
+        loop->init();
         //Subscribing to the events (for the observer pattern)
-        loop.subscribe(TRIGGERED, this);
-        loop.subscribe(PHYSICALLY_OPEN, this);
+        loop->subscribe(TRIGGERED, this);
+        loop->subscribe(PHYSICALLY_OPEN, this);
     }
 }
 
@@ -30,7 +30,7 @@ void AlarmManager::update(){
         case ARMING:
             //The waiting period before arming has been exceeded
             if(millis() - _armingSince >= _armingDelayMs){
-                _state = ARMED; //Alarm is now ARMED (and ready)
+                toggleState(ARMED); //Alarm is now ARMED (and ready)
             } 
             break;
         
@@ -44,13 +44,12 @@ void AlarmManager::update(){
                 //The siren duration has been reached
                 if(millis() - _intrusionStartedAt  >= _sirenDurationMs){
                     _siren.turnOff();
-                    // Re-include any previously bypassed zone if it has been closed PHYSICALLY
-                    updateAllLoops();
-
                     //We can rearm the alarm
-                    if(canRearmAlarm()){_state = ARMED; }  //Alarm instantly rearmed
-                    else{_state = STANDBY;} //No more loops available, we wait for loops to come back
+                    if(canRearmAlarm()){toggleState(ARMED); }  //Alarm instantly rearmed
+                    else{toggleState(STANDBY);} //No more loops available, we wait for loops to come back
                 }
+                // Re-include any previously bypassed zone if it has been closed PHYSICALLY
+                updateAllLoops();
             }
             break;
 
@@ -59,11 +58,35 @@ void AlarmManager::update(){
             updateAllLoops();
             //We can rearm the alarm
             if(canRearmAlarm()){
-                _state = ARMED; //Alarm instantly rearmed
+                toggleState(ARMED); //Alarm instantly rearmed
             }
             break;
     }
 } 
+
+void AlarmManager::toggleState(SystemState newState){
+    _state = newState;
+    switch (newState)
+    {
+    case ARMING:
+        notify(ALARM_ARMING);
+        break;
+    case ARMED:
+        notify(ALARM_ARMED);
+        break;
+    case INTRUSION:
+        notify(ALARM_INTRUSION);
+        break;
+    case DISARMED:
+        notify(ALARM_DISARMED);
+        break;
+    case STANDBY:
+        notify(ALARM_STANDBY);
+        break;
+    default:
+        break;
+    }
+}
 
 void AlarmManager::update(DetectionLoop* loop, LoopEvent event){
     if(event == TRIGGERED){
@@ -83,26 +106,25 @@ void AlarmManager::update(DetectionLoop* loop, LoopEvent event){
     
 }
 
-
 void AlarmManager::armAlarm(){
     if(_state == DISARMED){
-        _state = ARMING; //Start of the alarm arming procedure
         _armingSince = millis(); //Saving the start of arming
+        toggleState(ARMING); //Start of the alarm arming procedure
     }
     
 }
 
 void AlarmManager::updateAllLoops() {
-    for(DetectionLoop &loop : _loops) {
-        loop.update();
-        loop.tryAutoReenable();
+    for(DetectionLoop* &loop : _loops) {
+        loop->update();
+        loop->tryAutoReenable();
     }
 }
 
 bool AlarmManager::canRearmAlarm(){
     //Check if there are any non-bypassed loops remaining.
-    for(DetectionLoop &loop : _loops){
-        if(loop.isEnabled()){ //Minimum one has been found
+    for(DetectionLoop* &loop : _loops){
+        if(loop->isEnabled()){ //Minimum one has been found
             return true;
         }
     }
@@ -110,32 +132,34 @@ bool AlarmManager::canRearmAlarm(){
 }
 
 void AlarmManager::disarmAlarm(){
-    _state = DISARMED;
     _isSirenTriggeredManually = false;
     _siren.turnOff();
-    for(DetectionLoop &loop : _loops){
-        loop.resetTrigger(); //Reset the trigger  for each loop
-        loop.enable(); //Reset the bypass 
-    }     
+    for(DetectionLoop* &loop : _loops){
+        loop->resetTrigger(); //Reset the trigger  for each loop
+        loop->enable(); //Reset the bypass 
+    }
+    toggleState(DISARMED); //Start of the alarm arming procedure
+  
 }
 
 void AlarmManager::resetAlarm(){
-    for(DetectionLoop &loop : _loops){
-        loop.resetTrigger(); //Reset the trigger 
+    for(DetectionLoop* &loop : _loops){
+        loop->resetTrigger(); //Reset the trigger 
     }
 }
 
 void AlarmManager::beginIntrusion(){
     // Freeze all currently open zones to prevent them from re-triggering the alarm after this cycle ends
-    for(DetectionLoop &loop : _loops){
-        if(loop.isPhysicalOpen()){
-            loop.disable();
+    for(DetectionLoop* &loop : _loops){
+        if(loop->isPhysicalOpen()){
+            loop->disable();
         }
     }
-    _state = INTRUSION;
     //Beginning of the siren triggering
     _siren.turnOn();
     _intrusionStartedAt = millis(); //Saving the start of the triggering
+    toggleState(INTRUSION); 
+
 }
 
 void AlarmManager::triggerSirenManually(bool turnOn){
@@ -160,9 +184,9 @@ bool AlarmManager::isSirenActive(){
 
 std::vector<DetectionLoop*> AlarmManager::getTriggeredLoops(){
     std::vector<DetectionLoop*> triggeredLoops = {};
-    for(DetectionLoop &loop : _loops){
-        if(loop.isTriggered()){
-            triggeredLoops.push_back(&loop);
+    for(DetectionLoop* &loop : _loops){
+        if(loop->isTriggered()){
+            triggeredLoops.push_back(loop);
         }
     }
     return triggeredLoops;
@@ -178,13 +202,35 @@ void AlarmManager::setArmingDelay(unsigned long delayMs){
 }
 
 void AlarmManager::setEntryDelay(unsigned long delayMs){
-    for(DetectionLoop &loop : _loops){
-        loop.setDelay(delayMs);
+    for(DetectionLoop* &loop : _loops){
+        loop->setDelay(delayMs);
     }
 }
 
-SystemState AlarmManager::getCurrentState(){
+AlarmManager::SystemState AlarmManager::getCurrentState(){
     return _state;
 }
 
+//Overrided methods hfor Observer
+void AlarmManager::subscribe(AlarmManagerEvent event, IObserver<AlarmManager, AlarmManagerEvent>* observer){
+    observers[event].push_back(observer);
+
+};
+void AlarmManager::unsubscribe(AlarmManagerEvent event, IObserver<AlarmManager, AlarmManagerEvent>* observer){
+    //Getting the list of observers for the event
+    auto& list = observers[event];
+    //Finding et removing the right observer
+    list.erase(
+        std::remove(list.begin(), list.end(), observer),
+        list.end()
+    );
+}
+void AlarmManager::notify(AlarmManagerEvent event){
+    //Iterrating over the observers subscribed to the event
+    for (auto* observer : observers[event]) {
+        //Notify them that this loop was triggered
+        observer->update(this,event);
+    }
+};
+  
 

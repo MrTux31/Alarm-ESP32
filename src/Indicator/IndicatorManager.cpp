@@ -20,8 +20,9 @@ void IndicatorManager::addLoopIndicator(LoopIndicator &loopIndicator, DetectionL
         subjectLoop.subscribe(TRIGGERED, &loopIndicator);
         subjectLoop.subscribe(PHYSICALLY_OPEN, &loopIndicator);
         //Subscribing to alarm events
-        _alarm.subscribe(ALARM_ARMED, &loopIndicator);
         _alarm.subscribe(ALARM_DISARMED, &loopIndicator);
+        _alarm.subscribe(ALARM_INTRUSION, &loopIndicator);
+
 
         //Adding the indicator to the list
         _loopIndicators.push_back(&loopIndicator);
@@ -38,6 +39,7 @@ void IndicatorManager::setAlarmIndicator(AlarmIndicator &alarmIndicator){
     _alarm.subscribe(ALARM_DISARMED, &alarmIndicator);
     _alarm.subscribe(ALARM_ARMING, &alarmIndicator);
     _alarm.subscribe(ALARM_INTRUSION, &alarmIndicator);
+    _alarm.subscribe(ALARM_STANDBY, &alarmIndicator);
 
    
 }

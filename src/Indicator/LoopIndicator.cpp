@@ -9,7 +9,7 @@ void LoopIndicator::update(DetectionLoop *subject, LoopEvent event){
     switch (event)
     {
     case PHYSICALLY_OPEN:
-        //If the alarm has not detected an intrusion yet
+        //If the alarm has not detected an intrusion yet we can start blinking
         if(_alarmManager.getCurrentState() != AlarmManager::INTRUSION){
             _led.blink(300);
         }else{
@@ -21,11 +21,6 @@ void LoopIndicator::update(DetectionLoop *subject, LoopEvent event){
         _led.turnOn();
         break;
 
-    
-    //TODO : Gestion d'un event qui symbolise la fin du délai d'activation d'une loop
-    //Glitch visuel loop avec délai : continue à clignotter meme après fin d'alarme
-    
-
     }
 }
 
@@ -34,5 +29,13 @@ void LoopIndicator::update(AlarmManager *subject, AlarmManagerEvent event){
         case ALARM_DISARMED:
             _led.turnOff();
             break;
+        
+        case ALARM_INTRUSION:
+            //Stops blinking when an intrusion is detected.
+            if(_led.getCurrentMode() == Led::Mode::BLINKING){
+                _led.turnOn();
+            }
+            break;
+     
     }
 }

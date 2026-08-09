@@ -80,6 +80,9 @@ void AlarmManager::toggleState(SystemState newState){
     case DISARMED:
         notify(ALARM_DISARMED);
         break;
+    case STANDBY:
+        notify(ALARM_STANDBY);
+        break;
     default:
         break;
     }

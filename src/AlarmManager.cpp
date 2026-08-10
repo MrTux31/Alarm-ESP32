@@ -171,7 +171,7 @@ void AlarmManager::triggerSirenManually(bool turnOn){
         _siren.turnOff();
     }
     _isSirenTriggeredManually = turnOn; 
-    
+    notify(turnOn ? ALARM_MANUAL_ON : ALARM_MANUAL_OFF);
 }
 
 bool AlarmManager::isSirenTriggeredManually(){

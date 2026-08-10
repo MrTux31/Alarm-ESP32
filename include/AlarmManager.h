@@ -8,7 +8,7 @@
 #include <constants.h>
 #include <IObserver.h>
 
-enum AlarmManagerEvent { ALARM_ARMED, ALARM_ARMING, ALARM_DISARMED, ALARM_INTRUSION, ALARM_STANDBY };
+enum AlarmManagerEvent { ALARM_ARMED, ALARM_ARMING, ALARM_DISARMED, ALARM_INTRUSION, ALARM_STANDBY, ALARM_MANUAL_ON, ALARM_MANUAL_OFF };
 
 class AlarmManager : public ISubject<AlarmManager,AlarmManagerEvent> ,IObserver<DetectionLoop,LoopEvent>{
 

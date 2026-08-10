@@ -36,33 +36,39 @@ void CommunicationManager::init(){
     _alarmManager.subscribe(ALARM_MANUAL_ON, this);
     _alarmManager.subscribe(ALARM_MANUAL_OFF, this);
 
-
+    // Triggered on initial startup or after a connection loss.
+    // Overwrites outdated server data with the ESP32's current physical state.
+    _communicationService.onConnect([this](){
+        syncAll();
+    });
 }
 
 void CommunicationManager::update(){
     _communicationService.update();
 }
 
+//This method is called when a change is detected in the alarm manager
 void CommunicationManager::update(AlarmManager* subject, AlarmManagerEvent event){
+    syncAll();
+}
 
-    switch (event){
-
-        case ALARM_ARMING:
-            //Informs the communication service that the alarm is currently arming
+void CommunicationManager::syncAll(){
+    //Sync global alarm Status
+    switch (_alarmManager.getCurrentState()){
+        //Informs the communication service that the alarm is currently arming
+        case AlarmManager::ARMING:
             _communicationService.sendData(_config.keys.status, "Alarme en cours d'armement...");
             break;
-
-        case ALARM_ARMED:
+        
+        case AlarmManager::ARMED:
             _communicationService.sendData(_config.keys.status, "Alarme armée");
-            _communicationService.sendData(_config.keys.armDesarm, _config.values.arm);
             break;
 
-        case ALARM_DISARMED:
+        case AlarmManager::DISARMED:
             _communicationService.sendData(_config.keys.status, "Alarme désarmée");
-            _communicationService.sendData(_config.keys.armDesarm, _config.values.disarm);
             break;
 
-        case ALARM_INTRUSION:{
+        case AlarmManager::INTRUSION:{
             std::vector<DetectionLoop*> faultyLoops = _alarmManager.getTriggeredLoops();
             String names = "";
             //Listing opened loops names
@@ -72,20 +78,21 @@ void CommunicationManager::update(AlarmManager* subject, AlarmManagerEvent event
             _communicationService.sendData(_config.keys.status, "INTRUSION EN COURS : " + names);
             break;
         }
+    }
+    //Sync the Arm / Disarm button
+    if(_alarmManager.getCurrentState() == AlarmManager::DISARMED ){
+        _communicationService.sendData(_config.keys.armDesarm, _config.values.disarm);
+    }else{
+        _communicationService.sendData(_config.keys.armDesarm, _config.values.arm);
+    }
 
-        case ALARM_MANUAL_ON:
-            //Informs the communication service that the manual mode was turned on
-            _communicationService.sendData(_config.keys.manualMode, _config.values.manualModeOn);
-            break;
-
-        case ALARM_MANUAL_OFF:
-            _communicationService.sendData(_config.keys.manualMode, _config.values.manualModeOff);
-
-            break;
-
-            
-        default:
-            break;
-        }
+    //Sync the manual siren trigger button
+    if(_alarmManager.isSirenTriggeredManually()){
+        _communicationService.sendData(_config.keys.manualMode, _config.values.manualModeOn);
+    }else{
+        _communicationService.sendData(_config.keys.manualMode, _config.values.manualModeOff);
+    }
 
 }
+
+

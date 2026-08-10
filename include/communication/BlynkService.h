@@ -27,11 +27,23 @@ public:
     
     void triggerAction(int action, String value);
 
+    /**
+     * Docstring
+     */
+    void onConnect(std::function<void()> callback) override;
+
+    /**
+     * Docstring
+     */
+    void triggerConnect();
+
 private:
     std::map<int, std::function<void(String)>> _actions;
 
     int getVirtualPin(String key);
 
+    //Called function when the service is online / back online
+    std::function<void()> _connectCallback;
 };
 
 #endif

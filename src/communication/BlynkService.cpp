@@ -33,6 +33,10 @@ void BlynkService::sendData(String key, String data){
     }
 }
 
+void BlynkService::onConnect(std::function<void()> callback){
+    _connectCallback = callback;
+}
+
 int BlynkService::getVirtualPin(String key){
     int pin = key.toInt();
     //If not int trying to remove the "V" from "V1", "V2" etc (standard for blynk virtual pins)
@@ -50,10 +54,24 @@ void BlynkService::triggerAction(int action, String value){
     }
 }
 
+void BlynkService::triggerConnect(){
+    if(_connectCallback != nullptr){
+        _connectCallback();
+    }
+}
+
 //Actions coming from Blynk to the device
 BLYNK_WRITE_DEFAULT(){
     if(instancePtr != nullptr){
         //Triggering the callback
         instancePtr->triggerAction(request.pin, param.asStr());
+    }
+}
+
+//Executed when connection to Blynk is established (for first connection or when connection is back after a loss)
+BLYNK_CONNECTED(){
+    if(instancePtr != nullptr){
+        //Triggering the callback
+        instancePtr->triggerConnect();
     }
 }

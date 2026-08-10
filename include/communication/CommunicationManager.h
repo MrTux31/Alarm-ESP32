@@ -5,6 +5,7 @@
 #include <ICommunicationService.h>
 #include <AlarmManager.h>
 #include <IObserver.h>
+#include <WiFi.h>
 
 class CommunicationManager : public IObserver<AlarmManager, AlarmManagerEvent>{
 
@@ -39,8 +40,6 @@ public:
         } values;
     };
 
-    
-
     CommunicationManager(ICommunicationService& commService, Config config, AlarmManager& alarmManager);
 
     void init();
@@ -48,6 +47,9 @@ public:
     void update();
 
     //Method for observer pattern
+    /**
+     * TODO : Docstring
+     */
     void update(AlarmManager* subject, AlarmManagerEvent event) override;
 
 private:
@@ -56,6 +58,10 @@ private:
     Config _config;
     AlarmManager& _alarmManager;
 
+    /**
+     * TODO : Docstring
+     */
+    void syncAll();
 
 };
 

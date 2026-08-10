@@ -26,6 +26,10 @@ public:
      */
     virtual void onAction(String key, std::function<void(String)> callback) = 0;
 
+    /**
+     * TODO : docstring
+     */
+    virtual void onConnect(std::function<void()> callback) = 0;
 
 };
 

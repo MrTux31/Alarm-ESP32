@@ -8,6 +8,9 @@
 #include <BaseLedIndicator.h>
 #include <AlarmIndicator.h>
 #include <IndicatorManager.h>
+#include <service/BlynkService.h>
+#include <CommunicationManager.h>
+
 
 //Creating our siren
 RelaySiren siren(PIN_RELAY_SIREN, false);
@@ -36,6 +39,25 @@ AlarmIndicator alarmIndicator(PIN_LED_ARME);
 //Manager for the indicators
 IndicatorManager indicatorManager(alarmManager);
 
+//Setting up blynk
+BlynkService blynk;
+CommunicationManager::Config const blynkConfig = {
+  .keys = {
+    .status = "V0",
+    .armDesarm = "V1",
+    .manualMode = "V2",
+    .logs = "V3"
+  },
+  .values = {
+    .arm = "1",
+    .disarm = "0",
+    .manualModeOn = "1",
+    .manualModeOff = "0"
+  }
+};
+CommunicationManager comManager(blynk, blynkConfig, alarmManager);
+
+
 //Test button for manual trigger of the siren
 bool lastButtonState = HIGH;
 
@@ -53,6 +75,13 @@ void setup() {
   //Alarm setup
   alarmManager.init();
   alarmManager.setArmingDelay(10000);
+
+  //Blynk setup
+  //TODO 
+  blynk.init("TOKEN");
+  comManager.init();
+
+  //Arming alarm when the esp starts (for my personal needs)
   alarmManager.armAlarm();
 
   //test button
@@ -64,7 +93,8 @@ void setup() {
 void loop() {
   alarmManager.update();
   indicatorManager.update(); //Update Indicators
-
+  comManager.update();
+  
   currentState = alarmManager.getCurrentState();
 
   //Test button

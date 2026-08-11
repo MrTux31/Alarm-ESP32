@@ -61,6 +61,11 @@ public:
      */
     std::vector<DetectionLoop*> getTriggeredLoops();
 
+    /**
+     * @brief Returns alarm's loops
+     */
+    std::vector<DetectionLoop*>& getAllLoops();
+
     /** 
     * @brief Sets the siren/alarm duration in milliseconds.
     * @param durationMs The duration in milliseconds.

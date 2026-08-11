@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <map>
 #include <functional>
-#include <ICommunicationService.h>
+#include <service/ICommunicationService.h>
 
 /**
  * @class Generic class for communicating

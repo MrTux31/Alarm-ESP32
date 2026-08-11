@@ -193,6 +193,10 @@ std::vector<DetectionLoop*> AlarmManager::getTriggeredLoops(){
 
 }
 
+std::vector<DetectionLoop*>&  AlarmManager::getAllLoops(){
+    return _loops;
+}
+
 void AlarmManager::setSirenDuration(unsigned long durationMs){
     _sirenDurationMs = durationMs;
 }

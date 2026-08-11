@@ -2,12 +2,12 @@
 #define COMMUNICATION_MANAGER_H
 
 #include <Arduino.h>
-#include <ICommunicationService.h>
+#include <service/ICommunicationService.h>
 #include <AlarmManager.h>
 #include <IObserver.h>
 #include <WiFi.h>
 
-class CommunicationManager : public IObserver<AlarmManager, AlarmManagerEvent>{
+class CommunicationManager : public IObserver<AlarmManager, AlarmManagerEvent>, public IObserver<DetectionLoop, LoopEvent>{
 
 public:
     /**
@@ -27,6 +27,7 @@ public:
             String status;      // Unified display string channel (e.g., "V0")
             String armDesarm;   // Arming/Disarming command toggle (e.g., "V1")
             String manualMode;  // Manual siren override toggle (e.g., "V3")
+            String logs; //Logs section to track opened loops
         } keys;
 
         /** @struct Values
@@ -40,7 +41,7 @@ public:
         } values;
     };
 
-    CommunicationManager(ICommunicationService& commService, Config config, AlarmManager& alarmManager);
+    CommunicationManager(ICommunicationService& commService, const Config& config, AlarmManager& alarmManager);
 
     void init();
 
@@ -52,16 +53,35 @@ public:
      */
     void update(AlarmManager* subject, AlarmManagerEvent event) override;
 
+    /**
+     * TODO : Docstring
+     */
+    void update(DetectionLoop* subject, LoopEvent event) override;
+
+
 private:
     //An instance of a Communication Service used
     ICommunicationService& _communicationService; 
     Config _config;
     AlarmManager& _alarmManager;
 
+    std::vector<String> _openedLoopsLog;
+    const int MAX_LOOPS_LOG = 20; //Max stored in the logs (to protect ram)
+
     /**
      * TODO : Docstring
      */
     void syncAll();
+
+    void syncAlarmState();
+
+    void syncArmDesarm();
+
+    void syncManualMode();
+
+    void syncOpenedLoops();
+
+    String logOpenedLoop(DetectionLoop* loop);
 
 };
 

@@ -1,6 +1,6 @@
 #include <CommunicationManager.h>
-
-CommunicationManager::CommunicationManager(ICommunicationService& commService, Config config, AlarmManager& alarmManager) :
+#include <ezTime.h>
+CommunicationManager::CommunicationManager(ICommunicationService& commService, const Config& config, AlarmManager& alarmManager) :
 _communicationService(commService),_config(config),_alarmManager(alarmManager){
 
 }
@@ -41,6 +41,11 @@ void CommunicationManager::init(){
     _communicationService.onConnect([this](){
         syncAll();
     });
+
+    //Subscribing to each loop of the manager to log when they are opened
+    for(DetectionLoop* loop : _alarmManager.getAllLoops()){
+        loop->subscribe(PHYSICALLY_OPEN, this);
+    }
 }
 
 void CommunicationManager::update(){
@@ -49,10 +54,27 @@ void CommunicationManager::update(){
 
 //This method is called when a change is detected in the alarm manager
 void CommunicationManager::update(AlarmManager* subject, AlarmManagerEvent event){
-    syncAll();
+    syncAlarmState();
+    syncArmDesarm();
+    syncManualMode();
+}
+
+//This method is called when a change is detected in a subscribed loop
+void CommunicationManager::update(DetectionLoop* subject, LoopEvent event){
+    if(event == PHYSICALLY_OPEN){
+        String log = logOpenedLoop(subject);
+        syncOpenedLoops();
+    }
 }
 
 void CommunicationManager::syncAll(){
+    syncAlarmState();
+    syncArmDesarm();
+    syncManualMode();
+    syncOpenedLoops();
+}
+
+void CommunicationManager::syncAlarmState(){
     //Sync global alarm Status
     switch (_alarmManager.getCurrentState()){
         //Informs the communication service that the alarm is currently arming
@@ -68,7 +90,9 @@ void CommunicationManager::syncAll(){
             _communicationService.sendData(_config.keys.status, "Alarme désarmée");
             break;
 
-        case AlarmManager::INTRUSION:{
+        
+        case AlarmManager::INTRUSION:
+        case AlarmManager::STANDBY:{ //When standby, it's considered as intrusion (every loop are opened)
             std::vector<DetectionLoop*> faultyLoops = _alarmManager.getTriggeredLoops();
             String names = "";
             //Listing opened loops names
@@ -79,6 +103,9 @@ void CommunicationManager::syncAll(){
             break;
         }
     }
+}
+
+void CommunicationManager::syncArmDesarm(){
     //Sync the Arm / Disarm button
     if(_alarmManager.getCurrentState() == AlarmManager::DISARMED ){
         _communicationService.sendData(_config.keys.armDesarm, _config.values.disarm);
@@ -86,6 +113,9 @@ void CommunicationManager::syncAll(){
         _communicationService.sendData(_config.keys.armDesarm, _config.values.arm);
     }
 
+}
+
+void CommunicationManager::syncManualMode(){
     //Sync the manual siren trigger button
     if(_alarmManager.isSirenTriggeredManually()){
         _communicationService.sendData(_config.keys.manualMode, _config.values.manualModeOn);
@@ -95,4 +125,28 @@ void CommunicationManager::syncAll(){
 
 }
 
+void CommunicationManager::syncOpenedLoops(){
+    if (_openedLoopsLog.empty()) return;
 
+    //Generating full history
+    String fullHistory = "";
+    for(String loopLog : _openedLoopsLog){
+        fullHistory += loopLog +"\n";;
+    }
+    //Sending full history in one block
+    _communicationService.sendData(_config.keys.logs, fullHistory);
+
+}
+
+String CommunicationManager::logOpenedLoop(DetectionLoop* loop){
+    if(_openedLoopsLog.size() >= MAX_LOOPS_LOG){
+            //Remove oldest log
+            _openedLoopsLog.erase(_openedLoopsLog.begin());
+        }
+    String timeString = UTC.dateTime("H:i:s"); 
+    String logMessage = "[" + timeString + "] Zone : " + loop->getName() + " ouverte.";
+    //Saving the new log
+    _openedLoopsLog.push_back(logMessage); 
+
+    return logMessage;
+}

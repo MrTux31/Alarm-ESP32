@@ -1,4 +1,4 @@
-#include "BlynkService.h"
+#include "service/BlynkService.h"
 #include "BlynkSimpleEsp32.h"
 
 //Used to store the class instance

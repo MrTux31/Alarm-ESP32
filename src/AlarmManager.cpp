@@ -35,8 +35,13 @@ void AlarmManager::update(){
             break;
         
         case ARMED:
-            updateAllLoops();
-            //If a break is break is detected, this observer receives the event (in the second update method).
+            _intrusionDetectedThisCycle = false;
+            //If a loop is triggered, the loop will notify this observer class (_intrusionDetectedThisCycle will be true)
+            updateAllLoops(); 
+            if(_intrusionDetectedThisCycle){
+                beginIntrusion();
+            }
+
             break;
         
         case INTRUSION:
@@ -93,7 +98,7 @@ void AlarmManager::update(DetectionLoop* loop, LoopEvent event){
         if (_state == ARMED) {
                 //Disable the faulty loop to bypass it when we RE-ARM the alarm after 
                 loop->disable();
-                beginIntrusion();
+                _intrusionDetectedThisCycle = true;
                 
         }
     }
@@ -117,7 +122,6 @@ void AlarmManager::armAlarm(){
 void AlarmManager::updateAllLoops() {
     for(DetectionLoop* &loop : _loops) {
         loop->update();
-        loop->tryAutoReenable();
     }
 }
 

@@ -92,6 +92,7 @@ private:
 
     ISiren& _siren; //reference to the implementation of ISiren
     SystemState _state; // The current state of the alarm
+    bool _intrusionDetectedThisCycle;
     bool _isSirenTriggeredManually = false; //If the user manually triggers the siren
 
     std::vector<DetectionLoop*> &_loops; //Detection loops for the alarm

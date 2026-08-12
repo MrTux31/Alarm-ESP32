@@ -1,5 +1,4 @@
 #include <CommunicationManager.h>
-#include <ezTime.h>
 CommunicationManager::CommunicationManager(ICommunicationService& commService, const Config& config, AlarmManager& alarmManager) :
 _communicationService(commService),_config(config),_alarmManager(alarmManager){
 
@@ -44,12 +43,33 @@ void CommunicationManager::init(){
 
     //Subscribing to each loop of the manager to log when they are opened
     for(DetectionLoop* loop : _alarmManager.getAllLoops()){
-        loop->subscribe(PHYSICALLY_OPEN, this);
+        loop->subscribe(TRIGGERED, this);
     }
 }
 
 void CommunicationManager::update(){
     _communicationService.update();
+    processPendingNotifications();
+}
+
+
+void CommunicationManager::processPendingNotifications(){
+    //If there are pending notifications, sending them
+    for(auto& it : _pendingNotifications){ //iterating over each event code
+        String eventCode = it.first; //Getting the code
+        std::queue<String>& notifications = it.second; //Getting the queue associated to this code
+        if(!notifications.empty()){
+            if(canSendNotificationNow()){ //Antiflood delay respected + connection working
+                String notif = notifications.front();
+                _notifier->pushNotification(eventCode, notif);
+                notifications.pop(); 
+                _lastNotificationSentAt = millis();
+                Serial.println("[Queue] Notification envoyée.");
+                return;
+                
+            }
+        }
+    }
 }
 
 //This method is called when a change is detected in the alarm manager
@@ -61,7 +81,16 @@ void CommunicationManager::update(AlarmManager* subject, AlarmManagerEvent event
 
 //This method is called when a change is detected in a subscribed loop
 void CommunicationManager::update(DetectionLoop* subject, LoopEvent event){
-    if(event == PHYSICALLY_OPEN){
+    if(event == TRIGGERED){
+        Serial.println("Zone : " + subject->getName());
+        if(hasNotificationService()){
+            String notifCode = _config.keys.triggeredLoopNotification;
+            String message = "Zone : "+ subject->getName();
+            //Adding the notification to the pending notifications map
+            _pendingNotifications[notifCode].push(message);
+            Serial.println("[Queue] Notification empilée.");
+        }
+        
         String log = logOpenedLoop(subject);
         syncOpenedLoops();
     }
@@ -72,6 +101,7 @@ void CommunicationManager::syncAll(){
     syncArmDesarm();
     syncManualMode();
     syncOpenedLoops();
+    
 }
 
 void CommunicationManager::syncAlarmState(){
@@ -97,9 +127,9 @@ void CommunicationManager::syncAlarmState(){
             String names = "";
             //Listing opened loops names
             for(DetectionLoop *loop : faultyLoops){
-                names += loop->getName() + ", ";
+                names += loop->getName() + "\n";
             }
-            _communicationService.sendData(_config.keys.status, "INTRUSION EN COURS : " + names);
+            _communicationService.sendData(_config.keys.status, "INTRUSION EN COURS :\n" + names);
             break;
         }
     }
@@ -135,7 +165,7 @@ void CommunicationManager::syncOpenedLoops(){
     }
     //Sending full history in one block
     _communicationService.sendData(_config.keys.logs, fullHistory);
-
+    _openedLoopsLog.clear();
 }
 
 String CommunicationManager::logOpenedLoop(DetectionLoop* loop){
@@ -143,10 +173,26 @@ String CommunicationManager::logOpenedLoop(DetectionLoop* loop){
             //Remove oldest log
             _openedLoopsLog.erase(_openedLoopsLog.begin());
         }
-    String timeString = UTC.dateTime("H:i:s"); 
+    String timeString = _timeZone.dateTime("H:i:s"); 
     String logMessage = "[" + timeString + "] Zone : " + loop->getName() + " ouverte.";
     //Saving the new log
     _openedLoopsLog.push_back(logMessage); 
 
     return logMessage;
+}
+
+void CommunicationManager::setNotificationService(INotificationService& notifier){
+    _notifier = &notifier;
+}
+
+bool CommunicationManager::hasNotificationService(){
+    return _notifier != nullptr;
+}
+bool CommunicationManager::canSendNotificationNow(){
+
+    return _communicationService.isConnected() && millis() - _lastNotificationSentAt >= NOTIFICATION_SENDING_DELAY;
+}
+
+void CommunicationManager:: setPosix(String posixRule){
+    _timeZone.setPosix(posixRule);
 }

@@ -11,7 +11,7 @@
 #include <service/BlynkService.h>
 #include <CommunicationManager.h>
 #include <WiFiManager.h>
-
+#include <ezTime.h>
 //Creating our siren
 RelaySiren siren(PIN_RELAY_SIREN, false);
 
@@ -46,7 +46,8 @@ CommunicationManager::Config const blynkConfig = {
     .status = "V0",
     .armDesarm = "V1",
     .manualMode = "V2",
-    .logs = "V3"
+    .logs = "V3",
+    .triggeredLoopNotification = "loop_triggered"
   },
   .values = {
     .arm = "1",
@@ -56,7 +57,6 @@ CommunicationManager::Config const blynkConfig = {
   }
 };
 CommunicationManager comManager(blynk, blynkConfig, alarmManager);
-
 
 //Test button for manual trigger of the siren
 bool lastButtonState = HIGH;
@@ -81,6 +81,8 @@ void setup() {
   //Blynk setup
   blynk.init(BLYNK_AUTH_TOKEN);
   comManager.init();
+  comManager.setNotificationService(blynk); //To receive push notifications / mails 
+  comManager.setPosix("CET-1CEST,M3.5.0,M10.5.0/3"); //(For france, automatic winter and summer hour)
 
   //Arming alarm when the esp starts (for my personal needs)
   alarmManager.armAlarm();
@@ -95,6 +97,7 @@ void loop() {
   alarmManager.update();
   indicatorManager.update(); //Update Indicators
   WiFiManager::getInstance()->update();
+  events(); //Updating ez time
   comManager.update();
   
   currentState = alarmManager.getCurrentState();

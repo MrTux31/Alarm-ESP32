@@ -5,13 +5,15 @@
 #include <map>
 #include <functional>
 #include <service/ICommunicationService.h>
+#include <service/INotificationService.h>
 
 /**
  * @class Generic class for communicating
  * with Blynk and performing actions.
  * This class implements the interface ICommunicationService
+ * and INotificationService
  */
-class BlynkService : public ICommunicationService{
+class BlynkService : public ICommunicationService, public INotificationService{
 
 public: 
 
@@ -20,6 +22,8 @@ public:
     void init(const char* authToken);
 
     void update() override;
+
+    bool isConnected() override;
 
     void onAction(String key, std::function<void(String)> callback) override;
 
@@ -31,6 +35,8 @@ public:
      * Docstring
      */
     void onConnect(std::function<void()> callback) override;
+
+    void pushNotification(String eventCode, String description) override;
 
     /**
      * Docstring

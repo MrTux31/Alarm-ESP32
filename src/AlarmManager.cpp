@@ -122,6 +122,7 @@ void AlarmManager::armAlarm(){
 void AlarmManager::updateAllLoops() {
     for(DetectionLoop* &loop : _loops) {
         loop->update();
+        loop->tryAutoReenable();
     }
 }
 

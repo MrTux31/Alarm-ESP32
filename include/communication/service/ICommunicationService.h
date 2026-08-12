@@ -17,6 +17,12 @@ public:
     virtual void update() = 0;
 
     /**
+     * @brief Returns true if the connection with the server is active and working 
+     * correctly.
+     */
+    virtual bool isConnected() = 0;
+
+    /**
      * @brief Sends data to the remote server based on a universal string key.
      */
     virtual void sendData(String key, String data) = 0;
@@ -30,6 +36,8 @@ public:
      * TODO : docstring
      */
     virtual void onConnect(std::function<void()> callback) = 0;
+
+
 
 };
 

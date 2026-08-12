@@ -19,11 +19,14 @@ void BlynkService::update(){
     }
 }
 
+bool BlynkService::isConnected(){
+    return Blynk.connected();
+}
+
 void BlynkService::onAction(String key, std::function<void(String)> callback){
     int pin = getVirtualPin(key);
     _actions[pin] = callback;
 }
-
 
 void BlynkService::sendData(String key, String data){
     int pin = getVirtualPin(key);
@@ -35,6 +38,10 @@ void BlynkService::sendData(String key, String data){
 
 void BlynkService::onConnect(std::function<void()> callback){
     _connectCallback = callback;
+}
+
+void BlynkService::pushNotification(String eventCode, String description){
+    Blynk.logEvent(eventCode, description);
 }
 
 int BlynkService::getVirtualPin(String key){

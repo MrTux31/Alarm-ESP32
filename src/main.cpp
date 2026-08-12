@@ -10,7 +10,7 @@
 #include <IndicatorManager.h>
 #include <service/BlynkService.h>
 #include <CommunicationManager.h>
-
+#include <WiFiManager.h>
 
 //Creating our siren
 RelaySiren siren(PIN_RELAY_SIREN, false);
@@ -64,6 +64,8 @@ bool lastButtonState = HIGH;
 
 void setup() {
   Serial.begin(115200);
+  //Wifi connection
+  WiFiManager::getInstance()->init(WIFI_SSID, WIFI_PASS);
 
   //Setup led indicators
   indicatorManager.addLoopIndicator(loopIndicator1, door);
@@ -77,8 +79,7 @@ void setup() {
   alarmManager.setArmingDelay(10000);
 
   //Blynk setup
-  //TODO 
-  blynk.init("TOKEN");
+  blynk.init(BLYNK_AUTH_TOKEN);
   comManager.init();
 
   //Arming alarm when the esp starts (for my personal needs)
@@ -93,6 +94,7 @@ void setup() {
 void loop() {
   alarmManager.update();
   indicatorManager.update(); //Update Indicators
+  WiFiManager::getInstance()->update();
   comManager.update();
   
   currentState = alarmManager.getCurrentState();

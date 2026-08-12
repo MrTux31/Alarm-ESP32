@@ -44,6 +44,7 @@ void CommunicationManager::init(){
     //Subscribing to each loop of the manager to log when they are opened
     for(DetectionLoop* loop : _alarmManager.getAllLoops()){
         loop->subscribe(TRIGGERED, this);
+         loop->subscribe(PHYSICALLY_OPEN, this);
     }
 }
 
@@ -81,18 +82,25 @@ void CommunicationManager::update(AlarmManager* subject, AlarmManagerEvent event
 
 //This method is called when a change is detected in a subscribed loop
 void CommunicationManager::update(DetectionLoop* subject, LoopEvent event){
+    //Variables for the notification
+    String notifCode = _config.keys.triggeredLoopNotification;
+    String message = "Zone : "+ subject->getName();
+    
+    //Notification logic : 
+    // if triggered during armed state OR if opened during intrusion
+    //It's able to send notifications
+
     if(event == TRIGGERED){
-        Serial.println("Zone : " + subject->getName());
-        if(hasNotificationService()){
-            String notifCode = _config.keys.triggeredLoopNotification;
-            String message = "Zone : "+ subject->getName();
-            //Adding the notification to the pending notifications map
-            _pendingNotifications[notifCode].push(message);
-            Serial.println("[Queue] Notification empilée.");
+        if(_alarmManager.getCurrentState() == AlarmManager::ARMED){
+            sendNotification(notifCode, message);
         }
-        
         String log = logOpenedLoop(subject);
         syncOpenedLoops();
+    }
+    if(event == PHYSICALLY_OPEN){
+        if(_alarmManager.getCurrentState() == AlarmManager::INTRUSION){
+            sendNotification(notifCode, message);
+        }
     }
 }
 
@@ -183,6 +191,13 @@ String CommunicationManager::logOpenedLoop(DetectionLoop* loop){
 
 void CommunicationManager::setNotificationService(INotificationService& notifier){
     _notifier = &notifier;
+}
+void CommunicationManager::sendNotification(String code, String desc){
+    if(hasNotificationService()){
+        //Adding the notification to the pending notifications map
+        _pendingNotifications[code].push(desc);
+        Serial.println("Notification en attente");
+    }
 }
 
 bool CommunicationManager::hasNotificationService(){

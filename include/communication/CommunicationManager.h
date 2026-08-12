@@ -101,6 +101,8 @@ private:
 
     bool hasNotificationService();
 
+    void sendNotification(String code, String description);
+
     /**
      * Envoie une notification qui est en attente à chaque appel
      * Respecte le délai d'anti flood ainsi et effectue une vérification de connexion

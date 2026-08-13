@@ -21,6 +21,7 @@ void NotificationQueue::pushNotification(String code, String desc){
 }
 void NotificationQueue::update(bool isNetworkConnected){
     if(!isNetworkConnected){return;}
+    if(_notifier == nullptr){ return; } 
     if(_pendingNotifications.empty()){return;}
 
     //Anti flood protection

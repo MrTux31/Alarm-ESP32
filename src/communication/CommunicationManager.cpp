@@ -60,6 +60,10 @@ void CommunicationManager::update(){
 
 //This method is called when a change is detected in the alarm manager
 void CommunicationManager::update(AlarmManager* subject, AlarmManagerEvent event){
+    if(event == ALARM_DISARMED){
+        //Reset the stored loop
+        _lastTriggeredLoop = nullptr;
+    }
     syncAlarmState();
     syncArmDesarm();
     syncManualMode();
@@ -136,9 +140,15 @@ void CommunicationManager::syncManualMode(){
 }
 
 void CommunicationManager::syncOpenedLoop(){
-    if (_lastTriggeredLoop == nullptr) return;
-    String timeString = _timeZone.dateTime("H:i:s"); 
-    String logMessage = "[" + timeString + "] " + _lastTriggeredLoop->getName() + " ouverte.";
+    String logMessage;
+    //No loop was opened
+    if (_lastTriggeredLoop == nullptr){
+        logMessage = "Aucune boucle ouverte";
+    }
+    else{
+        String timeString = _timeZone.dateTime("H:i:s"); 
+        logMessage = "[" + timeString + "] " + _lastTriggeredLoop->getName() + " ouverte.";
+    }
     _communicationService.sendData(_config.keys.triggeredLoop, logMessage);
 }
 

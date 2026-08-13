@@ -12,32 +12,31 @@ WiFiManager* WiFiManager::getInstance(){
 void WiFiManager::init(const char* ssid,const char* password){
     _ssid = ssid;
     _password = password;
-    WiFi.begin(ssid, password);
     _previousRetry = millis();
+    WiFi.begin(ssid, password);
     WiFi.onEvent(onWifiDisconnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+    WiFi.onEvent(onWifiConnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED);
 }
 
 void WiFiManager::update(){
     //If the wifi managed to reconnect
-    if(WiFi.status() == WL_CONNECTED){
+    if(WiFi.status() == WL_CONNECTED && _wasDisconnected){
+        Serial.println("[WifiManager] Wifi re-connected successfully");
         _wasDisconnected = false;
         return;
     }
     
-    if(_wasDisconnected){
+    if(WiFi.status() != WL_CONNECTED && _wasDisconnected){
         retryConnection();
     }
 }
 
 void WiFiManager::retryConnection(){
     if(millis()- _previousRetry >= RETRY_INTERVAL){
-        
-        WiFi.begin(_ssid, _password);
-        //It will be true again with the onWifiDisconnected() method if connection fails
-        //Setting it to `false` prevents spamming the function call.
-        _wasDisconnected = false; 
+        Serial.println("[WifiManager] Retrying to connect");
         _previousRetry = millis();
-
+        WiFi.begin(_ssid, _password);
+        
     }
 }
 
@@ -50,7 +49,15 @@ void WiFiManager::onWifiDisconnected(WiFiEvent_t event, WiFiEventInfo_t info){
     }
     //Get singleton instance
     WiFiManager* instance = WiFiManager::getInstance();
-    instance->_wasDisconnected = true;
-    instance->_previousRetry = millis();
+    
+    if (!instance->_wasDisconnected) {
+        Serial.println("[WifiManager] Wifi disconnected");
+        instance->_wasDisconnected = true;
+    }
+
+}
+
+void WiFiManager::onWifiConnected(WiFiEvent_t event, WiFiEventInfo_t info){
+    Serial.println("[WifiManager] Wifi connected");
 
 }

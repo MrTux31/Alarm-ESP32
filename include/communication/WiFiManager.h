@@ -20,6 +20,8 @@ private:
      * Tries a reconnection to the wifi
      */
     static void onWifiDisconnected(WiFiEvent_t event, WiFiEventInfo_t info);
+    static void onWifiConnected(WiFiEvent_t event, WiFiEventInfo_t info);
+
 
     bool _wasDisconnected;
 

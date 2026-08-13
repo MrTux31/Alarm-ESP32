@@ -52,6 +52,18 @@ void DetectionLoop::setDelay(unsigned long delayMs){
     _delayMs = delayMs;
 }
 
+bool DetectionLoop::isDelayed(){
+    return _delayMs > 0;
+}
+
+void DetectionLoop::forceTrigger(){
+    if(!_wasTriggered){
+        _wasTriggered = true;
+        // Notify the manager/observers that this loop has been triggered
+        notify(TRIGGERED);
+    }
+}
+
 bool DetectionLoop::isTriggered(){
     if(!_wasOpened){ //The loop has not been triggered
         return false;

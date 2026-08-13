@@ -29,13 +29,6 @@ void LoopIndicator::update(AlarmManager *subject, AlarmManagerEvent event){
         case ALARM_DISARMED:
             _led.turnOff();
             break;
-        
-        case ALARM_INTRUSION:
-            //Stops blinking when an intrusion is detected.
-            if(_led.getCurrentMode() == Led::Mode::BLINKING){
-                _led.turnOn();
-            }
-            break;
-     
+    
     }
 }

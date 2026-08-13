@@ -65,7 +65,7 @@ void CommunicationManager::processPendingNotifications(){
                 _notifier->pushNotification(eventCode, notif);
                 notifications.pop(); 
                 _lastNotificationSentAt = millis();
-                Serial.println("[Queue] Notification envoyée.");
+                Serial.println("[Queue] Notification sent.");
                 return;
                 
             }
@@ -85,24 +85,18 @@ void CommunicationManager::update(DetectionLoop* subject, LoopEvent event){
     //Variables for the notification
     String notifCode = _config.keys.triggeredLoopNotification;
     String message = "Zone : "+ subject->getName();
-    
-    //Notification logic : 
-    // if triggered during armed state OR if opened during intrusion
-    //It's able to send notifications
-
+  
     if(event == TRIGGERED){
-        if(_alarmManager.getCurrentState() == AlarmManager::ARMED){
+        if(_alarmManager.getCurrentState() == AlarmManager::ARMED || _alarmManager.getCurrentState() == AlarmManager::INTRUSION){
             sendNotification(notifCode, message);
-        }
-        String log = logOpenedLoop(subject);
-        syncOpenedLoops();
-    }
-    if(event == PHYSICALLY_OPEN){
-        if(_alarmManager.getCurrentState() == AlarmManager::INTRUSION){
-            sendNotification(notifCode, message);
+            String log = logOpenedLoop(subject);
+            syncOpenedLoops(); 
         }
     }
+    
 }
+
+    
 
 void CommunicationManager::syncAll(){
     syncAlarmState();
@@ -196,7 +190,8 @@ void CommunicationManager::sendNotification(String code, String desc){
     if(hasNotificationService()){
         //Adding the notification to the pending notifications map
         _pendingNotifications[code].push(desc);
-        Serial.println("Notification en attente");
+        Serial.println("[Queue] Notification added to the queue");
+
     }
 }
 

@@ -46,7 +46,7 @@ CommunicationManager::Config const blynkConfig = {
     .status = "V0",
     .armDesarm = "V1",
     .manualMode = "V2",
-    .logs = "V3",
+    .triggeredLoop = "V3",
     .triggeredLoopNotification = "loop_triggered"
   },
   .values = {

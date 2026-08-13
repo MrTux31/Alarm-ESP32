@@ -10,7 +10,7 @@
 #include <map>
 #include <queue>
 #include <service/INotificationService.h>
-
+#include <NotificationQueue.h>
 class CommunicationManager : public IObserver<AlarmManager, AlarmManagerEvent>, public IObserver<DetectionLoop, LoopEvent>{
 
 public:
@@ -31,7 +31,7 @@ public:
             String status;      // Unified display string channel (e.g., "V0")
             String armDesarm;   // Arming/Disarming command toggle (e.g., "V1")
             String manualMode;  // Manual siren override toggle (e.g., "V3")
-            String logs; //Logs section to track opened loops
+            String triggeredLoop; //Logs section to track opened loops
             String triggeredLoopNotification; //Event code associated to triggered loops (used to send push notifications)
         } keys;
 
@@ -72,17 +72,12 @@ private:
     Config _config;
     AlarmManager& _alarmManager;
     INotificationService* _notifier;
+    NotificationQueue _notifQueue;
 
     Timezone _timeZone;
 
     //Opened loops logging
-    std::vector<String> _openedLoopsLog;
-    const int MAX_LOOPS_LOG = 20; //Max stored in the logs (to protect ram)
-
-    //Notifications waiting the good moment to be sent
-    std::map<String,std::queue<String>> _pendingNotifications;
-    unsigned long _lastNotificationSentAt = 0;
-    const unsigned long NOTIFICATION_SENDING_DELAY = 5000; //anti flood protection
+    DetectionLoop* _lastTriggeredLoop = nullptr;
 
     /**
      * TODO : Docstring
@@ -95,28 +90,10 @@ private:
 
     void syncManualMode();
 
-    void syncOpenedLoops();
+    void syncOpenedLoop();
 
     String logOpenedLoop(DetectionLoop* loop);
 
-    bool hasNotificationService();
-
-    void sendNotification(String code, String description);
-
-    /**
-     * Envoie une notification qui est en attente à chaque appel
-     * Respecte le délai d'anti flood ainsi et effectue une vérification de connexion
-     * au service de communication.
-     */
-    void processPendingNotifications();
-
-    /**
-     * Returns true if we can send the notification now,
-     * verifies :
-     * - If the connection to the connection service is active
-     * - If we respected the anti flood delay
-     */
-    bool canSendNotificationNow();
 };
 
 #endif

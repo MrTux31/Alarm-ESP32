@@ -1,6 +1,7 @@
 #include <CommunicationManager.h>
 CommunicationManager::CommunicationManager(ICommunicationService& commService, const Config& config, AlarmManager& alarmManager) :
-_communicationService(commService),_config(config),_alarmManager(alarmManager){
+_communicationService(commService),_config(config),_alarmManager(alarmManager)
+{
 
 }
 
@@ -50,28 +51,12 @@ void CommunicationManager::init(){
 
 void CommunicationManager::update(){
     _communicationService.update();
-    processPendingNotifications();
+    _notifQueue.update(_communicationService.isConnected());
+
 }
 
 
-void CommunicationManager::processPendingNotifications(){
-    //If there are pending notifications, sending them
-    for(auto& it : _pendingNotifications){ //iterating over each event code
-        String eventCode = it.first; //Getting the code
-        std::queue<String>& notifications = it.second; //Getting the queue associated to this code
-        if(!notifications.empty()){
-            if(canSendNotificationNow()){ //Antiflood delay respected + connection working
-                String notif = notifications.front();
-                _notifier->pushNotification(eventCode, notif);
-                notifications.pop(); 
-                _lastNotificationSentAt = millis();
-                Serial.println("[Queue] Notification sent.");
-                return;
-                
-            }
-        }
-    }
-}
+
 
 //This method is called when a change is detected in the alarm manager
 void CommunicationManager::update(AlarmManager* subject, AlarmManagerEvent event){
@@ -88,21 +73,21 @@ void CommunicationManager::update(DetectionLoop* subject, LoopEvent event){
   
     if(event == TRIGGERED){
         if(_alarmManager.getCurrentState() == AlarmManager::ARMED || _alarmManager.getCurrentState() == AlarmManager::INTRUSION){
-            sendNotification(notifCode, message);
-            String log = logOpenedLoop(subject);
-            syncOpenedLoops(); 
+            //Sending notification
+            _notifQueue.pushNotification(notifCode, message);
+            //Updating the log section
+            _lastTriggeredLoop = subject;
+            syncOpenedLoop(); 
         }
     }
     
 }
 
-    
-
 void CommunicationManager::syncAll(){
     syncAlarmState();
     syncArmDesarm();
     syncManualMode();
-    syncOpenedLoops();
+    syncOpenedLoop();
     
 }
 
@@ -122,16 +107,9 @@ void CommunicationManager::syncAlarmState(){
             _communicationService.sendData(_config.keys.status, "Alarme désarmée");
             break;
 
-        
         case AlarmManager::INTRUSION:
         case AlarmManager::STANDBY:{ //When standby, it's considered as intrusion (every loop are opened)
-            std::vector<DetectionLoop*> faultyLoops = _alarmManager.getTriggeredLoops();
-            String names = "";
-            //Listing opened loops names
-            for(DetectionLoop *loop : faultyLoops){
-                names += loop->getName() + "\n";
-            }
-            _communicationService.sendData(_config.keys.status, "INTRUSION EN COURS :\n" + names);
+            _communicationService.sendData(_config.keys.status, "INTRUSION EN COURS");
             break;
         }
     }
@@ -157,50 +135,17 @@ void CommunicationManager::syncManualMode(){
 
 }
 
-void CommunicationManager::syncOpenedLoops(){
-    if (_openedLoopsLog.empty()) return;
-
-    //Generating full history
-    String fullHistory = "";
-    for(String loopLog : _openedLoopsLog){
-        fullHistory += loopLog +"\n";;
-    }
-    //Sending full history in one block
-    _communicationService.sendData(_config.keys.logs, fullHistory);
-    _openedLoopsLog.clear();
-}
-
-String CommunicationManager::logOpenedLoop(DetectionLoop* loop){
-    if(_openedLoopsLog.size() >= MAX_LOOPS_LOG){
-            //Remove oldest log
-            _openedLoopsLog.erase(_openedLoopsLog.begin());
-        }
+void CommunicationManager::syncOpenedLoop(){
+    if (_lastTriggeredLoop == nullptr) return;
     String timeString = _timeZone.dateTime("H:i:s"); 
-    String logMessage = "[" + timeString + "] Zone : " + loop->getName() + " ouverte.";
-    //Saving the new log
-    _openedLoopsLog.push_back(logMessage); 
-
-    return logMessage;
+    String logMessage = "[" + timeString + "] " + _lastTriggeredLoop->getName() + " ouverte.";
+    _communicationService.sendData(_config.keys.triggeredLoop, logMessage);
 }
+
 
 void CommunicationManager::setNotificationService(INotificationService& notifier){
     _notifier = &notifier;
-}
-void CommunicationManager::sendNotification(String code, String desc){
-    if(hasNotificationService()){
-        //Adding the notification to the pending notifications map
-        _pendingNotifications[code].push(desc);
-        Serial.println("[Queue] Notification added to the queue");
-
-    }
-}
-
-bool CommunicationManager::hasNotificationService(){
-    return _notifier != nullptr;
-}
-bool CommunicationManager::canSendNotificationNow(){
-
-    return _communicationService.isConnected() && millis() - _lastNotificationSentAt >= NOTIFICATION_SENDING_DELAY;
+    _notifQueue.setNotifier(notifier);
 }
 
 void CommunicationManager:: setPosix(String posixRule){

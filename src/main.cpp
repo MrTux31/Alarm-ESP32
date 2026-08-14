@@ -8,7 +8,10 @@
 #include <BaseLedIndicator.h>
 #include <AlarmIndicator.h>
 #include <IndicatorManager.h>
-
+#include <service/BlynkService.h>
+#include <CommunicationManager.h>
+#include <WiFiManager.h>
+#include <ezTime.h>
 //Creating our siren
 RelaySiren siren(PIN_RELAY_SIREN, false);
 
@@ -36,12 +39,33 @@ AlarmIndicator alarmIndicator(PIN_LED_ARME);
 //Manager for the indicators
 IndicatorManager indicatorManager(alarmManager);
 
+//Setting up blynk
+BlynkService blynk;
+CommunicationManager::Config const blynkConfig = {
+  .keys = {
+    .status = "V0",
+    .armDesarm = "V1",
+    .manualMode = "V2",
+    .triggeredLoop = "V3",
+    .triggeredLoopNotification = "loop_triggered"
+  },
+  .values = {
+    .arm = "1",
+    .disarm = "0",
+    .manualModeOn = "1",
+    .manualModeOff = "0"
+  }
+};
+CommunicationManager comManager(blynk, blynkConfig, alarmManager);
+
 //Test button for manual trigger of the siren
 bool lastButtonState = HIGH;
 
 
 void setup() {
   Serial.begin(115200);
+  //Wifi connection
+  WiFiManager::getInstance()->init(WIFI_SSID, WIFI_PASS);
 
   //Setup led indicators
   indicatorManager.addLoopIndicator(loopIndicator1, door);
@@ -53,6 +77,14 @@ void setup() {
   //Alarm setup
   alarmManager.init();
   alarmManager.setArmingDelay(10000);
+
+  //Blynk setup
+  blynk.init(BLYNK_AUTH_TOKEN);
+  comManager.init();
+  comManager.setNotificationService(blynk); //To receive push notifications / mails 
+  comManager.setPosix("CET-1CEST,M3.5.0,M10.5.0/3"); //(For france, automatic winter and summer hour)
+
+  //Arming alarm when the esp starts (for my personal needs)
   alarmManager.armAlarm();
 
   //test button
@@ -64,7 +96,10 @@ void setup() {
 void loop() {
   alarmManager.update();
   indicatorManager.update(); //Update Indicators
-
+  WiFiManager::getInstance()->update();
+  events(); //Updating ez time
+  comManager.update();
+  
   currentState = alarmManager.getCurrentState();
 
   //Test button

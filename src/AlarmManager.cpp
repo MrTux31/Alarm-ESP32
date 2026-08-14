@@ -104,6 +104,7 @@ void AlarmManager::update(DetectionLoop* loop, LoopEvent event){
     }
     if(event == PHYSICALLY_OPEN){
         if (_state == INTRUSION){
+                loop->forceTrigger();
                 //Disable loops triggered DURING the intrusion (we don't want them to trigger the siren again)
                 loop->disable();
         }
@@ -122,6 +123,7 @@ void AlarmManager::armAlarm(){
 void AlarmManager::updateAllLoops() {
     for(DetectionLoop* &loop : _loops) {
         loop->update();
+        loop->tryAutoReenable();
     }
 }
 
@@ -156,6 +158,7 @@ void AlarmManager::beginIntrusion(){
     // Freeze all currently open zones to prevent them from re-triggering the alarm after this cycle ends
     for(DetectionLoop* &loop : _loops){
         if(loop->isPhysicalOpen()){
+            loop->forceTrigger();
             loop->disable();
         }
     }
@@ -175,7 +178,7 @@ void AlarmManager::triggerSirenManually(bool turnOn){
         _siren.turnOff();
     }
     _isSirenTriggeredManually = turnOn; 
-    
+    notify(turnOn ? ALARM_MANUAL_ON : ALARM_MANUAL_OFF);
 }
 
 bool AlarmManager::isSirenTriggeredManually(){
@@ -195,6 +198,10 @@ std::vector<DetectionLoop*> AlarmManager::getTriggeredLoops(){
     }
     return triggeredLoops;
 
+}
+
+std::vector<DetectionLoop*>&  AlarmManager::getAllLoops(){
+    return _loops;
 }
 
 void AlarmManager::setSirenDuration(unsigned long durationMs){

@@ -8,7 +8,7 @@
 #include <constants.h>
 #include <IObserver.h>
 
-enum AlarmManagerEvent { ALARM_ARMED, ALARM_ARMING, ALARM_DISARMED, ALARM_INTRUSION, ALARM_STANDBY };
+enum AlarmManagerEvent { ALARM_ARMED, ALARM_ARMING, ALARM_DISARMED, ALARM_INTRUSION, ALARM_STANDBY, ALARM_MANUAL_ON, ALARM_MANUAL_OFF };
 
 class AlarmManager : public ISubject<AlarmManager,AlarmManagerEvent> ,IObserver<DetectionLoop,LoopEvent>{
 
@@ -60,6 +60,11 @@ public:
      * @brief Retrieves all loops that were triggered during the current intrusion
      */
     std::vector<DetectionLoop*> getTriggeredLoops();
+
+    /**
+     * @brief Returns alarm's loops
+     */
+    std::vector<DetectionLoop*>& getAllLoops();
 
     /** 
     * @brief Sets the siren/alarm duration in milliseconds.

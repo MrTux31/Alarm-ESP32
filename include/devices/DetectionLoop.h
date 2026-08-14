@@ -89,6 +89,16 @@ public:
     void setDelay(unsigned long delayMs);
 
     /**
+    * Returns true if the loop has a delay > 0ms 
+    */
+    bool isDelayed();
+
+    /**
+     * Forces the detection loop to be considered as triggered
+     */
+    void forceTrigger();
+
+    /**
      * Determines whether the loop is considered open, taking into account
      * any potential wait time.
      */

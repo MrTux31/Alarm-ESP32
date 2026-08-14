@@ -33,6 +33,7 @@ void CommunicationManager::init(){
     _alarmManager.subscribe(ALARM_ARMED, this);
     _alarmManager.subscribe(ALARM_DISARMED, this);
     _alarmManager.subscribe(ALARM_INTRUSION, this);
+    _alarmManager.subscribe(ALARM_STANDBY, this);
     _alarmManager.subscribe(ALARM_MANUAL_ON, this);
     _alarmManager.subscribe(ALARM_MANUAL_OFF, this);
 
@@ -45,7 +46,6 @@ void CommunicationManager::init(){
     //Subscribing to each loop of the manager to log when they are opened
     for(DetectionLoop* loop : _alarmManager.getAllLoops()){
         loop->subscribe(TRIGGERED, this);
-         loop->subscribe(PHYSICALLY_OPEN, this);
     }
 }
 
@@ -56,32 +56,48 @@ void CommunicationManager::update(){
 }
 
 
-
-
 //This method is called when a change is detected in the alarm manager
 void CommunicationManager::update(AlarmManager* subject, AlarmManagerEvent event){
+    
     if(event == ALARM_DISARMED){
         //Reset the stored loop
         _lastTriggeredLoop = nullptr;
+        syncTriggeredLoop();
     }
-    syncAlarmState();
-    syncArmDesarm();
-    syncManualMode();
+    
+    switch (event){
+        case ALARM_DISARMED:
+        case ALARM_ARMING:
+        case ALARM_ARMED:
+        case ALARM_INTRUSION:
+        case ALARM_STANDBY:
+            syncAlarmState();
+            syncArmDesarm();
+            break;
+
+        case ALARM_MANUAL_OFF:
+        case ALARM_MANUAL_ON:
+            syncManualMode();
+            break;
+        
+        default:
+            break;
+    }
 }
 
 //This method is called when a change is detected in a subscribed loop
 void CommunicationManager::update(DetectionLoop* subject, LoopEvent event){
-    //Variables for the notification
-    String notifCode = _config.keys.triggeredLoopNotification;
-    String message = "Zone : "+ subject->getName();
-  
+    
     if(event == TRIGGERED){
         if(_alarmManager.getCurrentState() == AlarmManager::ARMED || _alarmManager.getCurrentState() == AlarmManager::INTRUSION){
+            //Variables for the notification
+            String notifCode = _config.keys.triggeredLoopNotification;
+            String message = "Zone : "+ subject->getName();
+
+            _lastTriggeredLoop = subject;
             //Sending notification
             _notifQueue.pushNotification(notifCode, message);
-            //Updating the log section
-            _lastTriggeredLoop = subject;
-            syncOpenedLoop(); 
+            syncTriggeredLoop(); 
         }
     }
     
@@ -91,7 +107,7 @@ void CommunicationManager::syncAll(){
     syncAlarmState();
     syncArmDesarm();
     syncManualMode();
-    syncOpenedLoop();
+    syncTriggeredLoop();
     
 }
 
@@ -112,10 +128,11 @@ void CommunicationManager::syncAlarmState(){
             break;
 
         case AlarmManager::INTRUSION:
-        case AlarmManager::STANDBY:{ //When standby, it's considered as intrusion (every loop are opened)
             _communicationService.sendData(_config.keys.status, "INTRUSION EN COURS");
             break;
-        }
+        case AlarmManager::STANDBY:
+            _communicationService.sendData(_config.keys.status, "En attente de boucles disponibles...");
+            break;
     }
 }
 
@@ -139,17 +156,19 @@ void CommunicationManager::syncManualMode(){
 
 }
 
-void CommunicationManager::syncOpenedLoop(){
+void CommunicationManager::syncTriggeredLoop(){
     String logMessage;
     //No loop was opened
     if (_lastTriggeredLoop == nullptr){
         logMessage = "Aucune boucle ouverte";
+
     }
     else{
         String timeString = _timeZone.dateTime("H:i:s"); 
         logMessage = "[" + timeString + "] " + _lastTriggeredLoop->getName() + " ouverte.";
     }
     _communicationService.sendData(_config.keys.triggeredLoop, logMessage);
+
 }
 
 

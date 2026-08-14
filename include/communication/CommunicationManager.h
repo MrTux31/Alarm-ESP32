@@ -90,9 +90,7 @@ private:
 
     void syncManualMode();
 
-    void syncOpenedLoop();
-
-    String logOpenedLoop(DetectionLoop* loop);
+    void syncTriggeredLoop();
 
 };
 

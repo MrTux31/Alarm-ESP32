@@ -45,17 +45,20 @@ void AlarmManager::update(){
             break;
         
         case INTRUSION:
-            if(!_isSirenTriggeredManually){ //Only process the automatic siren timeout if the user has not overridden it manually
-                //The siren duration has been reached
-                if(millis() - _intrusionStartedAt  >= _sirenDurationMs){
+            //The siren duration has been reached
+            if(millis() - _intrusionStartedAt  >= _sirenDurationMs){
+                //Only process the the stopping of the siren if the user has not overridden it manually
+                if(!_isSirenTriggeredManually){
                     _siren.turnOff();
-                    //We can rearm the alarm
-                    if(canRearmAlarm()){toggleState(ARMED); }  //Alarm instantly rearmed
-                    else{toggleState(STANDBY);} //No more loops available, we wait for loops to come back
                 }
-                // Re-include any previously bypassed zone if it has been closed PHYSICALLY
-                updateAllLoops();
+                //We can rearm the alarm
+                if(canRearmAlarm()){toggleState(ARMED); }
+                //No more loops available, we wait for loops to come back
+                else{toggleState(STANDBY);} 
             }
+            
+            // Re-include any previously bypassed zone if it has been closed PHYSICALLY
+            updateAllLoops();
             break;
 
         case STANDBY:
@@ -98,8 +101,7 @@ void AlarmManager::update(DetectionLoop* loop, LoopEvent event){
         if (_state == ARMED) {
                 //Disable the faulty loop to bypass it when we RE-ARM the alarm after 
                 loop->disable();
-                _intrusionDetectedThisCycle = true;
-                
+                _intrusionDetectedThisCycle = true;       
         }
     }
     if(event == PHYSICALLY_OPEN){
@@ -108,16 +110,14 @@ void AlarmManager::update(DetectionLoop* loop, LoopEvent event){
                 //Disable loops triggered DURING the intrusion (we don't want them to trigger the siren again)
                 loop->disable();
         }
-    }
-    
+    }  
 }
 
 void AlarmManager::armAlarm(){
     if(_state == DISARMED){
         _armingSince = millis(); //Saving the start of arming
         toggleState(ARMING); //Start of the alarm arming procedure
-    }
-    
+    }  
 }
 
 void AlarmManager::updateAllLoops() {
@@ -138,14 +138,17 @@ bool AlarmManager::canRearmAlarm(){
 }
 
 void AlarmManager::disarmAlarm(){
-    _isSirenTriggeredManually = false;
-    _siren.turnOff();
+    //Stoping manual mode
+    if(_isSirenTriggeredManually){
+        triggerSirenManually(false);
+    //Shutting siren off
+    }else{_siren.turnOff();}
+
     for(DetectionLoop* &loop : _loops){
         loop->resetTrigger(); //Reset the trigger  for each loop
         loop->enable(); //Reset the bypass 
     }
     toggleState(DISARMED); //Start of the alarm arming procedure
-  
 }
 
 void AlarmManager::resetAlarm(){
@@ -225,8 +228,8 @@ AlarmManager::SystemState AlarmManager::getCurrentState(){
 //Overrided methods hfor Observer
 void AlarmManager::subscribe(AlarmManagerEvent event, IObserver<AlarmManager, AlarmManagerEvent>* observer){
     observers[event].push_back(observer);
+}
 
-};
 void AlarmManager::unsubscribe(AlarmManagerEvent event, IObserver<AlarmManager, AlarmManagerEvent>* observer){
     //Getting the list of observers for the event
     auto& list = observers[event];
@@ -236,6 +239,7 @@ void AlarmManager::unsubscribe(AlarmManagerEvent event, IObserver<AlarmManager, 
         list.end()
     );
 }
+
 void AlarmManager::notify(AlarmManagerEvent event){
     //Iterrating over the observers subscribed to the event
     for (auto* observer : observers[event]) {

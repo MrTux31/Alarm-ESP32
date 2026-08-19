@@ -16,13 +16,13 @@
 RelaySiren siren(PIN_RELAY_SIREN, false);
 
 //Creating loops
-DetectionLoop door(PIN_LOOP_1,"Main door",20000);
-DetectionLoop window1(PIN_LOOP_2,"Window 1");
-DetectionLoop window2(PIN_LOOP_3,"Window 2");
-DetectionLoop window3(PIN_LOOP_4,"Window 3");
+DetectionLoop loop1(PIN_LOOP_1,NAME_LOOP_1,ENTRY_DELAY);
+DetectionLoop loop2(PIN_LOOP_2,NAME_LOOP_2);
+DetectionLoop loop3(PIN_LOOP_3,NAME_LOOP_3);
+DetectionLoop loop4(PIN_LOOP_4,NAME_LOOP_4);
 
 //Group all the loops together
-std::vector<DetectionLoop*> loops = {&door,&window1,&window2,&window3};
+std::vector<DetectionLoop*> loops = {&loop1,&loop2,&loop3,&loop4};
 
 //Creating the alarm manager
 AlarmManager alarmManager(siren,loops);
@@ -30,11 +30,11 @@ AlarmManager::SystemState currentState; //Only for console debug
 AlarmManager::SystemState lastState = AlarmManager::DISARMED;//Only for console debug
 
 //Creating led indicators
-LoopIndicator loopIndicator1(PIN_LED_B1, alarmManager);
-LoopIndicator loopIndicator2(PIN_LED_B2, alarmManager);
-LoopIndicator loopIndicator3(PIN_LED_B3, alarmManager);
-LoopIndicator loopIndicator4(PIN_LED_B4, alarmManager);
-AlarmIndicator alarmIndicator(PIN_LED_ARME);
+LoopIndicator loopIndicator1(PIN_LED_LOOP_1, alarmManager);
+LoopIndicator loopIndicator2(PIN_LED_LOOP_2, alarmManager);
+LoopIndicator loopIndicator3(PIN_LED_LOOP_3, alarmManager);
+LoopIndicator loopIndicator4(PIN_LED_LOOP_4, alarmManager);
+AlarmIndicator alarmIndicator(PIN_LED_ALARM_STATUS);
 
 //Manager for the indicators
 IndicatorManager indicatorManager(alarmManager);
@@ -67,29 +67,28 @@ void setup() {
   //Wifi connection
   WiFiManager::getInstance()->init(WIFI_SSID, WIFI_PASS);
 
-  //Setup led indicators
-  indicatorManager.addLoopIndicator(loopIndicator1, door);
-  indicatorManager.addLoopIndicator(loopIndicator2, window1);
-  indicatorManager.addLoopIndicator(loopIndicator3, window2);
-  indicatorManager.addLoopIndicator(loopIndicator4, window3);
-  indicatorManager.setAlarmIndicator(alarmIndicator);
-
-  //Alarm setup
-  alarmManager.init();
-  alarmManager.setArmingDelay(10000);
-
   //Blynk setup
   blynk.init(BLYNK_AUTH_TOKEN);
   comManager.init();
   comManager.setNotificationService(blynk); //To receive push notifications / mails 
   comManager.setPosix("CET-1CEST,M3.5.0,M10.5.0/3"); //(For france, automatic winter and summer hour)
 
+  //Setup led indicators
+  indicatorManager.addLoopIndicator(loopIndicator1, loop1);
+  indicatorManager.addLoopIndicator(loopIndicator2, loop2);
+  indicatorManager.addLoopIndicator(loopIndicator3, loop3);
+  indicatorManager.addLoopIndicator(loopIndicator4, loop4);
+  indicatorManager.setAlarmIndicator(alarmIndicator);
+
+  //Alarm setup
+  alarmManager.init();
+  alarmManager.setArmingDelay(ARMING_DELAY);
+
   //Arming alarm when the esp starts (for my personal needs)
   alarmManager.armAlarm();
 
   //test button
   pinMode(PIN_BTN_ARM, INPUT_PULLUP);
-
 
 }
 

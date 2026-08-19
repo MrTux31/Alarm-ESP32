@@ -8,7 +8,7 @@ void AlarmIndicator::update(AlarmManager *subject, AlarmManagerEvent event){
     switch (event){
 
         case ALARM_ARMING:
-            _led.blink(200);
+            _led.blink(ARMING_BLINKING_DELAY);
             break;
 
         case ALARM_ARMED:
@@ -16,7 +16,7 @@ void AlarmIndicator::update(AlarmManager *subject, AlarmManagerEvent event){
             break;
 
         case ALARM_INTRUSION:
-            _led.blink(50); //Ultra fast blinking
+            _led.blink(INTRUSION_BLINKING_DELAY); //Ultra fast blinking
             break;
 
         case ALARM_STANDBY:

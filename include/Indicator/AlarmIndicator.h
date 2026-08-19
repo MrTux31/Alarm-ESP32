@@ -8,6 +8,9 @@
 #include <BaseLedIndicator.h>
 
 class AlarmIndicator : public BaseLedIndicator, public IObserver<AlarmManager, AlarmManagerEvent> {
+private:
+    static unsigned long constexpr ARMING_BLINKING_DELAY = 500;
+    static unsigned long constexpr INTRUSION_BLINKING_DELAY = 100;
 
 public:
     AlarmIndicator(int pinLed);

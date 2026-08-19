@@ -18,6 +18,7 @@ void LoopIndicator::update(DetectionLoop *subject, LoopEvent event){
         break;
 
     case TRIGGERED:
+        //Switch to normal lighting when triggered
         _led.turnOn();
         break;
 

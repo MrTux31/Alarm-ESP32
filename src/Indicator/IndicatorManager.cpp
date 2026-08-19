@@ -23,7 +23,6 @@ void IndicatorManager::addLoopIndicator(LoopIndicator &loopIndicator, DetectionL
         _alarm.subscribe(ALARM_DISARMED, &loopIndicator);
         _alarm.subscribe(ALARM_INTRUSION, &loopIndicator);
 
-
         //Adding the indicator to the list
         _loopIndicators.push_back(&loopIndicator);
     

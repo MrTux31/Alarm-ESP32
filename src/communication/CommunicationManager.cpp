@@ -37,16 +37,17 @@ void CommunicationManager::init(){
     _alarmManager.subscribe(ALARM_MANUAL_ON, this);
     _alarmManager.subscribe(ALARM_MANUAL_OFF, this);
 
+    //Subscribing to each loop of the manager to log when they are opened
+    for(DetectionLoop* loop : _alarmManager.getAllLoops()){
+        loop->subscribe(TRIGGERED, this);
+    }
+
     // Triggered on initial startup or after a connection loss.
     // Overwrites outdated server data with the ESP32's current physical state.
     _communicationService.onConnect([this](){
         syncAll();
     });
 
-    //Subscribing to each loop of the manager to log when they are opened
-    for(DetectionLoop* loop : _alarmManager.getAllLoops()){
-        loop->subscribe(TRIGGERED, this);
-    }
 }
 
 void CommunicationManager::update(){

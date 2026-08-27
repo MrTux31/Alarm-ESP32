@@ -19,7 +19,6 @@ void AlarmManager::init(){
     }
 }
 
-
 void AlarmManager::update(){
     
     switch (_state){

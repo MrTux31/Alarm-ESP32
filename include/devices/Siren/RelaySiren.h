@@ -5,7 +5,8 @@
 #include <Arduino.h>
 
 /**
- * Implementation of the alarm interface;
+ * @class RelaySiren
+ * @brief Implementation of the alarm interface
  * represents a siren operating via a relay.
  */
 class RelaySiren : public ISiren{ 
@@ -16,7 +17,12 @@ private:
     bool _isActive;
 
 public:
-    RelaySiren(int pin, bool activeLow = true); //Active low if the relay activates on a LOW state 
+    /**
+    * @brief Constructor
+    * @param pin The pin used for the siren
+    * @param activeLow true if the relay activates on a LOW state 
+    */
+    RelaySiren(int pin, bool activeLow = true); 
 
     void init() override;
     bool isActive() override;

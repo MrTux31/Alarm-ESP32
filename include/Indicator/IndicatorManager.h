@@ -9,7 +9,7 @@
 #include <vector>
 /**
  * @class IndicatorManager
- * @brief Controls the LEDs based on the status of the loops and the alarm system.
+ * @brief Controls the LED indicators based on the status of the loops and the alarm system.
  */
 class IndicatorManager{
 
@@ -21,7 +21,10 @@ private:
     std::vector<LoopIndicator*> _loopIndicators;
     
 public:
-
+    /**
+     * @brief Constructor
+     * @param alarmManager The instance of the Alarm Manager
+     */
     IndicatorManager(AlarmManager &alarmManager);
 
     /**

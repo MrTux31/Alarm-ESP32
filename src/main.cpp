@@ -96,9 +96,11 @@ void loop() {
   alarmManager.update();
   indicatorManager.update(); //Update Indicators
   WiFiManager::getInstance()->update();
-  events(); //Updating ez time
-  comManager.update();
-  
+   if (WiFi.status() == WL_CONNECTED) {
+      events(); //Updating ezTime            
+  }
+  comManager.update(); 
+
   currentState = alarmManager.getCurrentState();
 
   //Test button

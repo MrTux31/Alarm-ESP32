@@ -16,11 +16,12 @@ void AlarmIndicator::update(AlarmManager *subject, AlarmManagerEvent event){
             break;
 
         case ALARM_INTRUSION:
-            _led.blink(INTRUSION_BLINKING_DELAY); //Ultra fast blinking
+            //Ultra fast blinking
+            _led.blink(INTRUSION_BLINKING_DELAY); 
             break;
 
         case ALARM_STANDBY:
-            _led.turnOn(); //Ultra fast blinking
+            _led.turnOn();
             break;
 
         case ALARM_DISARMED:

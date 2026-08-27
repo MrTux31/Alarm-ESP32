@@ -2,16 +2,30 @@
 #define LED_H
 #include <Arduino.h>
 
-
+/**
+ * @class Class representing a Led 
+ */
 class Led{
 
 public:
     enum Mode{ON, OFF, BLINKING};
 
+    /**
+     * @brief Constructor
+     * @param pin the pin used for the led
+     */
     Led(int pin);
 
+    /**
+     * @brief Initializes the led
+     */
     void init();
 
+    /**
+     * @brief Updates the led if in blinking mode,
+     * checks if the blink delay has been reached.
+     * Must be called in the main loop.
+     */
     void update();
 
     /**
@@ -19,10 +33,13 @@ public:
      */
     void turnOn();
     
+    /**
+     * @brief Turns the led off
+     */
     void turnOff();
 
     /**
-     * Determines whether the LED is physically lit
+     * @brief Determines whether the LED is physically lit
      */
     bool isPhysicallyOn() const;
 
@@ -33,13 +50,13 @@ public:
     void blink(unsigned long intervalMs) ;
 
     /**
-     * Returns the current operating mode of the LED
+     * @brief Returns the current operating mode of the LED
      * On, blinking, or off
      */
     Mode getCurrentMode();
 
     /**
-     * Returns the used pin for the led on the circuit
+     * @brief Returns the used pin for the led on the circuit
      */
     int getPin();
 

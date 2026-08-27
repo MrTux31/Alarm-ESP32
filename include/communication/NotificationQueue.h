@@ -5,7 +5,7 @@
 #include <service/INotificationService.h>
 #include <queue>
 /**
- * Class designed to buffer notifications in a queue, enforcing 
+ * @class Class designed to buffer notifications in a queue, enforcing 
  * a mandatory anti-flood dispatch delay and validating network 
  * connectivity before transmission.
  */
@@ -26,6 +26,12 @@ public:
 
     NotificationQueue(INotificationService& _notifier);
 
+    /**
+     * @brief Updates the notification queue to send notifications that are ready to be sent.
+     * Notifications wait for a certain delay before being sent and check for an active network connection.
+     * Must be called continuously within the main loop.
+     * @param networkConnected True if the network is connected
+     */
     void update(bool networkConnected);
 
     /**
@@ -41,6 +47,10 @@ public:
      */
     void pushNotification(String code, String desc);
 
+    /**
+    * @brief Sets the notification service responsible for sending
+    * notifications.
+    */
     void setNotifier(INotificationService& notifier);
 };
 

@@ -33,9 +33,9 @@ public:
     virtual void onAction(String key, std::function<void(String)> callback) = 0;
 
     /**
-     * @brief Permet de définir une fonction callback à appeler
-     * lorsque le service de communication se connecte 
-     * Par exemple : lorsque la connexion avec le serveur est établie
+     * @brief Sets a callback function to be called
+     * when the communication service connects
+     * For example: when the connection to the server is established
      */
     virtual void onConnect(std::function<void()> callback) = 0;
 

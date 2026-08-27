@@ -20,8 +20,8 @@ public:
     BlynkService();
 
     /**
-     * Initialise la connexion à Blynk avec le 
-     * token d'identification de l'utilisateur.
+     * @brief Initializes the connection to Blynk using the 
+     * user's authentification token.
      */
     void init(const char* authToken);
 
@@ -29,17 +29,18 @@ public:
 
     bool isConnected() override;
 
-    /**Permet de lier une broche virtuelle de Blynk à une fonction callback
-     */
+   /**
+    * @brief Links a Blynk virtual pin to a callback function
+    */
     void onAction(String key, std::function<void(String)> callback) override;
 
-    /**
-     * Permet d'envoyer des informations sur une broche virtuelle de blynk
+   /**
+     * @brief Sends information to a Blynk virtual pin
      */
     void sendData(String key, String data) override;
     
     /**
-     * Permet de déclencher des actions provenenant de Blynk
+     * @brief Allows triggering actions coming from Blynk
      */
     void triggerAction(int action, String value);
 
@@ -47,24 +48,28 @@ public:
     void onConnect(std::function<void()> callback) override;
 
     /**
-     * Permet de log un évènement sur blynk
-     * (Blynk se charge de : envoi notif sur téléphone, mail...)
+     * @brief Logs an event to Blynk
+     * (Blynk handles sending notifications to the phone, email, etc.)
      */
     void pushNotification(String eventCode, String description) override;
 
     /**
-     * Permet de déclencher le callback de connexion enregistré
-     * avec onConnect()
+     * @brief Triggers the connection callback registered
+     * with onConnect()
      */
     void triggerConnect();
 
 private:
+    /**    
+    * @brief Map linking Blynk virtual pins to callback functions to be called
+    * when commands from Blynk are received
+    */
     std::map<int, std::function<void(String)>> _actions;
 
     /**
-     * Permet de convertir une broche blynk qui est en String
-     * vers un entier.
-     * Se charge automatiquement du parsing.
+     * @brief Converts a Blynk pin (provided as a String)
+     * into an integer.
+     * Automatically handles the parsing.
      */
     int getVirtualPin(String key);
 

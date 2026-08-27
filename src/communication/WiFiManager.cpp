@@ -45,6 +45,7 @@ void WiFiManager::onWifiDisconnected(WiFiEvent_t event, WiFiEventInfo_t info){
     //Wrong identifiants
     if(reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT){
         WiFi.disconnect();
+        Serial.println("[WifiManager] Wifi disconnected");
         return; //We don't retry
     }
     //Get singleton instance
@@ -52,6 +53,7 @@ void WiFiManager::onWifiDisconnected(WiFiEvent_t event, WiFiEventInfo_t info){
     
     if (!instance->_wasDisconnected) {
         Serial.println("[WifiManager] Wifi disconnected");
+        //Set to true, reconnection will be attempted on the next call to the update() method.
         instance->_wasDisconnected = true;
     }
 

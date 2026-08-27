@@ -33,7 +33,9 @@ public:
     virtual void onAction(String key, std::function<void(String)> callback) = 0;
 
     /**
-     * TODO : docstring
+     * @brief Permet de définir une fonction callback à appeler
+     * lorsque le service de communication se connecte 
+     * Par exemple : lorsque la connexion avec le serveur est établie
      */
     virtual void onConnect(std::function<void()> callback) = 0;
 

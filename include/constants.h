@@ -34,5 +34,11 @@ const String POSIX_RULE = "CET-1CEST,M3.5.0,M10.5.0/3"; //Set your POSIX time zo
 //Arm / Disarm Button
 const int PIN_BTN_ARM  = 27; 
 
+//Blynk virtual pins
+const char* const VPIN_STATUS = "V0";
+const char* const VPIN_ARM_DISARM = "V1";
+const char* const VPIN_MANUAL_MODE = "V2";
+const char* const VPIN_TRIGGERED_LOOP = "V3";
+const char* const NOTIFICATION_CODE_LOOP_TRIGGERED = "loop_triggered";
 
 #endif

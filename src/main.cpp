@@ -43,11 +43,11 @@ IndicatorManager indicatorManager(alarmManager);
 BlynkService blynk;
 CommunicationManager::Config const blynkConfig = {
   .keys = {
-    .status = "V0",
-    .armDesarm = "V1",
-    .manualMode = "V2",
-    .triggeredLoop = "V3",
-    .triggeredLoopNotification = "loop_triggered"
+    .status = VPIN_STATUS,
+    .armDesarm = VPIN_ARM_DISARM,
+    .manualMode = VPIN_MANUAL_MODE,
+    .triggeredLoop = VPIN_TRIGGERED_LOOP,
+    .triggeredLoopNotification = NOTIFICATION_CODE_LOOP_TRIGGERED
   },
   .values = {
     .arm = "1",

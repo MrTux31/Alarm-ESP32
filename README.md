@@ -2,7 +2,7 @@
 
 **[English](README.md) | [Français](README.fr.md)**
 
-A smart, ESP32-based home alarm system, usable **standalone** or **connected to the internet** with full remote control via [Blynk](https://blynk.io/).
+A smart, ESP32-based home alarm system, usable **standalone** or **connected to the internet** with full remote control via the [Blynk](https://blynk.io/) IoT platform.
 
 The repository contains a complete PlatformIO project at its root.
 

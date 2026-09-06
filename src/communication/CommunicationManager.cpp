@@ -117,22 +117,22 @@ void CommunicationManager::syncAlarmState(){
     switch (_alarmManager.getCurrentState()){
         //Informs the communication service that the alarm is currently arming
         case AlarmManager::ARMING:
-            _communicationService.sendData(_config.keys.status, "Alarme en cours d'armement...");
+            _communicationService.sendData(_config.keys.status, "System arming...");
             break;
         
         case AlarmManager::ARMED:
-            _communicationService.sendData(_config.keys.status, "Alarme armée");
+            _communicationService.sendData(_config.keys.status, "Alarm armed");
             break;
 
         case AlarmManager::DISARMED:
-            _communicationService.sendData(_config.keys.status, "Alarme désarmée");
+            _communicationService.sendData(_config.keys.status, "Alarm disarmed");
             break;
 
         case AlarmManager::INTRUSION:
-            _communicationService.sendData(_config.keys.status, "INTRUSION EN COURS");
+            _communicationService.sendData(_config.keys.status, "INTRUSION DETECTED");
             break;
         case AlarmManager::STANDBY:
-            _communicationService.sendData(_config.keys.status, "En attente de boucles disponibles...");
+            _communicationService.sendData(_config.keys.status, "Waiting for available loops...");
             break;
     }
 }
@@ -161,12 +161,12 @@ void CommunicationManager::syncTriggeredLoop(){
     String logMessage;
     //No loop was opened
     if (_lastTriggeredLoop == nullptr){
-        logMessage = "Aucune boucle ouverte";
+        logMessage = "No open loops";
 
     }
     else{
         String timeString = _timeZone.dateTime("H:i:s"); 
-        logMessage = "[" + timeString + "] " + _lastTriggeredLoop->getName() + " ouverte.";
+        logMessage = "[" + timeString + "] " + _lastTriggeredLoop->getName() + " opened.";
     }
     _communicationService.sendData(_config.keys.triggeredLoop, logMessage);
 

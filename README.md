@@ -95,6 +95,8 @@ System behavior is defined in [`include/constants.h`](include/constants.h): pin 
 | `ENTRY_DELAY` | Grace period on the main entry loop, to allow disarming before the siren sounds |
 | `DEFAULT_SIREN_DURATION_MS` | How long the siren stays on when triggered |
 | `POSIX_RULE` | POSIX timezone string used by ezTime for correctly timestamped notifications (e.g. `CET-1CEST,M3.5.0,M10.5.0/3` for France) — see [posix.timezoneapi.io](https://posix.timezoneapi.io/) to find yours |
+| `VPIN_STATUS`, `VPIN_ARM_DISARM`, `VPIN_MANUAL_MODE`, `VPIN_TRIGGERED_LOOP` | Blynk virtual pins, matching the [datastreams](#datastreams) configured on your template |
+| `NOTIFICATION_CODE_LOOP_TRIGGERED` | Event code for the Blynk [intrusion notification](#notifications) |
 
 ### Wi-Fi & Blynk credentials
 

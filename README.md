@@ -286,7 +286,7 @@ The connected setup builds on the exact same `AlarmManager` / `DetectionLoop` / 
 - **`CommunicationManager`** — the glue between `AlarmManager` and a communication service (here, `BlynkService`). It's configured with a mapping of virtual pin keys and values (status, arm/disarm, manual mode, triggered loop, notification code) and keeps the remote dashboard in sync with every state change.
 - **[ezTime](https://github.com/ropg/ezTime)** — keeps notification timestamps correctly adjusted for your timezone and daylight saving time, configured via a POSIX TZ string (e.g. `CET-1CEST,M3.5.0,M10.5.0/3` for France).
  
-**The full, working version of this connected setup lives directly in [`src/main.cpp`](src/main.cpp)** rather than being duplicated here as a snippet — that way this README never goes out of sync with the actual code, and you get a complete, ready-to-flash example (4 loops, LED indicators, Wi-Fi, Blynk, and console debug output all wired together).
+**The full, working version of this connected setup lives directly in [`src/main.cpp`](src/main.cpp)** rather than being duplicated here as a snippet — you get a complete, ready-to-flash example (4 loops, LED indicators, Wi-Fi, Blynk, and console debug output all wired together).
  
 If you're setting up your own connected version, start from `main.cpp`, fill in `credentials.ini` as described in [Configuration](#configuration), and use the [Blynk section](#blynk--remote-control) above to recreate the template and dashboard.
  

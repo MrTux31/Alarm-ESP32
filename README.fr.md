@@ -94,6 +94,8 @@ Le comportement du système est défini dans [`include/constants.h`](include/con
 | `ENTRY_DELAY` | Délai de grâce sur la boucle d'entrée principale, pour avoir le temps de désarmer avant que la sirène sonne |
 | `DEFAULT_SIREN_DURATION_MS` | Durée pendant laquelle la sirène reste active une fois déclenchée |
 | `POSIX_RULE` | Chaîne de fuseau horaire au format POSIX, utilisée par ezTime pour horodater correctement les notifications (ex : `CET-1CEST,M3.5.0,M10.5.0/3` pour la France) — voir [posix.timezoneapi.io](https://posix.timezoneapi.io/) pour trouver la vôtre |
+| `VPIN_STATUS`, `VPIN_ARM_DISARM`, `VPIN_MANUAL_MODE`, `VPIN_TRIGGERED_LOOP` | Pins virtuels Blynk, correspondant aux [datastreams](#datastreams) configurés sur votre template |
+| `NOTIFICATION_CODE_LOOP_TRIGGERED` | Code d'événement pour la [notification d'intrusion](#notifications) Blynk |
 
 ### Identifiants Wi-Fi & Blynk
 

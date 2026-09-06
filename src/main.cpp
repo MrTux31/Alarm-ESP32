@@ -109,7 +109,7 @@ void loop() {
 
   lastButtonState = reading;
 
-  //Console tests
+  //Console debug output
   if (currentState != lastState) {
     lastState = currentState;
     switch (currentState) {

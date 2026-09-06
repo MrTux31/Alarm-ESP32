@@ -121,6 +121,8 @@ build_flags =
 ---
 
 ## Blynk / Remote Control
+To use the alarm in connected mode, you first need to set up a Blynk account and template — the alarm won't be able to report its status or accept remote commands otherwise. 
+This section walks through recreating the template used by this project.
 
 ### Datastreams
 

@@ -58,9 +58,8 @@ CommunicationManager::Config const blynkConfig = {
 };
 CommunicationManager comManager(blynk, blynkConfig, alarmManager);
 
-//Test button for manual trigger of the siren
+//State for the Arm / Disarm Button
 bool lastButtonState = HIGH;
-
 
 void setup() {
   Serial.begin(115200);
@@ -83,9 +82,6 @@ void setup() {
   //Alarm setup
   alarmManager.init();
   alarmManager.setArmingDelay(ARMING_DELAY);
-
-  //Arming alarm when the esp starts (for my personal needs)
-  alarmManager.armAlarm();
 
   //Button for arm / disarm
   pinMode(PIN_BTN_ARM, INPUT_PULLUP);

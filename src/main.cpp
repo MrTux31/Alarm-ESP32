@@ -87,7 +87,7 @@ void setup() {
   //Arming alarm when the esp starts (for my personal needs)
   alarmManager.armAlarm();
 
-  //test button
+  //Button for arm / disarm
   pinMode(PIN_BTN_ARM, INPUT_PULLUP);
 
 }
@@ -103,15 +103,15 @@ void loop() {
 
   currentState = alarmManager.getCurrentState();
 
-  //Test button
-   bool reading = digitalRead(PIN_BTN_ARM);
-   if (reading == LOW && lastButtonState == HIGH) {
-     alarmManager.triggerSirenManually(true);
-   }else if (reading == HIGH && lastButtonState == LOW){
-    alarmManager.triggerSirenManually(false);
-   }
-   lastButtonState = reading;
+  //Arm / Disarm Button
+  bool reading = digitalRead(PIN_BTN_ARM);
+  if (reading == LOW && lastButtonState == HIGH) {
+    if(alarmManager.getCurrentState() == AlarmManager::DISARMED){
+        alarmManager.armAlarm();
+    }else{ alarmManager.disarmAlarm();}     
+  }
 
+  lastButtonState = reading;
 
   //Console tests
   if (currentState != lastState) {

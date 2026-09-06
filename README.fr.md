@@ -4,7 +4,7 @@
 
 Un système d'alarme domestique intelligent basé sur l'ESP32, utilisable en **mode autonome** ou **connecté à internet** avec contrôle distant complet via la plateforme d'IoT [Blynk](https://blynk.io/).
 
-Le dépôt contient un projet PlatformIO complet à sa racine.
+Le dépôt contient un projet PlatformIO complet à sa racine, avec [`src/main.cpp`](src/main.cpp) qui fournit un exemple complet et fonctionnel de la configuration connectée (Wi-Fi, Blynk et indicateurs LED combinés) — prêt à flasher tel quel ou à utiliser comme référence pour votre propre configuration.
 
 ---
 
@@ -75,6 +75,7 @@ L'alarme peut optionnellement se connecter au Wi-Fi et communiquer son statut vi
 3. Ouvrez le dossier racine dans VS Code.
 4. PlatformIO téléchargera automatiquement les toolchains et dépendances pour l'ESP32.
 
+> `src/main.cpp` est prêt à être compilé et téléversé tel quel une fois que vous avez renseigné `credentials.ini` et ajusté vos constantes (voir la section Configuration) ; il s'agit d'un système d'alarme connecté complet que vous pouvez utiliser en l'état ou modifier selon vos besoins.
 ---
 
 ## Configuration
@@ -281,9 +282,10 @@ La configuration connectée s'appuie sur les mêmes classes `AlarmManager` / `De
 - **`CommunicationManager`** — la couche de liaison entre `AlarmManager` et un service de communication (ici, `BlynkService`). Il est configuré avec un mapping des clés et valeurs des pins virtuels (statut, armer/désarmer, mode manuel, boucle déclenchée, code de notification) et maintient le dashboard distant synchronisé à chaque changement d'état.
 - **[ezTime](https://github.com/ropg/ezTime)** — garde les horodatages des notifications correctement ajustés à votre fuseau horaire et à l'heure d'été/hiver, configuré via une chaîne TZ au format POSIX (par exemple `CET-1CEST,M3.5.0,M10.5.0/3` pour la France).
 
-Comme la configuration connectée assemble plusieurs éléments supplémentaires, la version complète et fonctionnelle se trouve directement dans [`src/main.cpp`](src/main.cpp) plutôt que d'être dupliquée ici — ainsi ce README ne se désynchronise jamais du code réel.
-
+**La version complète et fonctionnelle de cette configuration connectée se trouve directement dans [`src/main.cpp`](src/main.cpp)**, plutôt que d'être dupliquée ici sous forme d'extrait — vous avez un exemple complet, prêt à flasher (4 boucles, indicateurs LED, Wi-Fi, Blynk, et sortie de debug console, tous assemblés ensemble).
+ 
 Si vous mettez en place votre propre version connectée, partez de `main.cpp`, renseignez `credentials.ini` comme décrit dans la section [Configuration](#configuration), et utilisez la [section Blynk](#blynk--contrôle-distant) ci-dessus pour recréer le template et le dashboard.
+
 
 ---
 

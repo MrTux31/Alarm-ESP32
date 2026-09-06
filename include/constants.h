@@ -1,6 +1,8 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#include <Arduino.h>
+
 // These items are examples! Adjust them to your own needs.
 
 //Loops

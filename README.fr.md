@@ -1,4 +1,4 @@
-# ESP32 Alarm System
+# SmartAlarm ESP32
 
 **[English](README.md) | [Français](README.fr.md)**
 

@@ -76,7 +76,7 @@ The alarm can optionally connect to Wi-Fi and report its status through Blynk:
 3. Open the root folder in VS Code.
 4. PlatformIO will automatically download the ESP32 toolchains and dependencies.
 
-src/main.cpp is ready to build and flash as-is once you have filled in credentials.ini and adjusted your constants (see Configuration)— it is a complete connected alarm system that you can use as-is or modify to suit your own needs. 
+> src/main.cpp is ready to build and flash as-is once you have filled in `credentials.ini` and adjusted your constants (see Configuration)— it is a complete connected alarm system that you can use as-is or modify to suit your own needs. 
 
 ---
 

@@ -1,5 +1,7 @@
 # ESP32 Alarm System
 
+**[English](README.md) | [Français](README.fr.md)**
+
 A smart, ESP32-based home alarm system, usable **standalone** or **connected to the internet** with full remote control via [Blynk](https://blynk.io/).
 
 The repository contains a complete PlatformIO project at its root.
@@ -17,6 +19,7 @@ The repository contains a complete PlatformIO project at its root.
 - [Schematics](#schematics)
 - [Glossary](#glossary)
 - [Contributing](#contributing)
+- [License](#license)
 ---
 
 ## Features
@@ -295,3 +298,8 @@ The circuit schematics for the assembly will be available soon.
 ## Contributing
 
 Issues and pull requests are welcome. This project is still a work in progress, so feedback on the alarm logic, hardware abstractions, or documentation is appreciated.
+
+## License
+This project is distributed under the **GNU General Public License v3.0 (GPLv3)** — see the [LICENSE](LICENSE) file for details.
+
+In summary: you are free to use, modify, and redistribute this project, including for commercial purposes, provided that any distributed derivative work remains open-source under the same license (GPLv3) and the source code is made available.

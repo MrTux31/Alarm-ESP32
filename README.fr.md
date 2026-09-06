@@ -120,6 +120,7 @@ build_flags =
 ---
 
 ## Blynk / Contrôle distant
+Pour utiliser l'alarme en mode connecté, vous devez d'abord configurer un compte et un template Blynk — sans cela, l'alarme ne pourra ni communiquer son statut, ni accepter les commandes à distance. Cette section explique comment recréer le template utilisé par ce projet.
 
 ### Datastreams
 

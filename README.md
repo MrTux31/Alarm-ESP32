@@ -1,10 +1,10 @@
 # ESP32 Alarm System
-
+ 
 **[English](README.md) | [Français](README.fr.md)**
-
+ 
 A smart, ESP32-based home alarm system, usable **standalone** or **connected to the internet** with full remote control via the [Blynk](https://blynk.io/) IoT platform.
-
-The repository contains a complete PlatformIO project at its root.
+ 
+The repository contains a complete PlatformIO project at its root, with [`src/main.cpp`](src/main.cpp) providing a fully working example of the connected setup (Wi-Fi, Blynk, and LED indicators combined) — ready to flash as-is or use as a reference for your own configuration.
 
 ---
 
@@ -75,6 +75,8 @@ The alarm can optionally connect to Wi-Fi and report its status through Blynk:
 2. Clone this repository.
 3. Open the root folder in VS Code.
 4. PlatformIO will automatically download the ESP32 toolchains and dependencies.
+
+src/main.cpp is ready to build and flash as-is once you have filled in credentials.ini and adjusted your constants (see Configuration)— it is a complete connected alarm system that you can use as-is or modify to suit your own needs. 
 
 ---
 
@@ -283,9 +285,11 @@ The connected setup builds on the exact same `AlarmManager` / `DetectionLoop` / 
 - **`BlynkService`** — the Blynk-specific implementation of the communication layer: it knows how to read/write Blynk virtual pins and send push/email notifications. This is the piece you'd swap out to use a different protocol (e.g. MQTT).
 - **`CommunicationManager`** — the glue between `AlarmManager` and a communication service (here, `BlynkService`). It's configured with a mapping of virtual pin keys and values (status, arm/disarm, manual mode, triggered loop, notification code) and keeps the remote dashboard in sync with every state change.
 - **[ezTime](https://github.com/ropg/ezTime)** — keeps notification timestamps correctly adjusted for your timezone and daylight saving time, configured via a POSIX TZ string (e.g. `CET-1CEST,M3.5.0,M10.5.0/3` for France).
-Since the connected setup wires together several extra pieces, the full, working version lives directly in [`src/main.cpp`](src/main.cpp) rather than being duplicated here — that way this README never goes out of sync with the actual code.
+ 
+**The full, working version of this connected setup lives directly in [`src/main.cpp`](src/main.cpp)** rather than being duplicated here as a snippet — that way this README never goes out of sync with the actual code, and you get a complete, ready-to-flash example (4 loops, LED indicators, Wi-Fi, Blynk, and console debug output all wired together).
  
 If you're setting up your own connected version, start from `main.cpp`, fill in `credentials.ini` as described in [Configuration](#configuration), and use the [Blynk section](#blynk--remote-control) above to recreate the template and dashboard.
+ 
 
 ---
 

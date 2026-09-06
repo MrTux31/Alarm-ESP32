@@ -70,7 +70,7 @@ void setup() {
   blynk.init(BLYNK_AUTH_TOKEN);
   comManager.init();
   comManager.setNotificationService(blynk); //To receive push notifications / mails 
-  comManager.setPosix("CET-1CEST,M3.5.0,M10.5.0/3"); //(For france, automatic winter and summer hour)
+  comManager.setPosix(POSIX_RULE); //Time zone
 
   //Setup led indicators
   indicatorManager.addLoopIndicator(loopIndicator1, loop1);

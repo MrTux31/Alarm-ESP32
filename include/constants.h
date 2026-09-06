@@ -26,10 +26,11 @@ const unsigned long ARMING_DELAY = 25000; //Exit delay
 const unsigned long ENTRY_DELAY = 12000; //Delay for the main door (to have the time to disarm)
 const unsigned long DEFAULT_SIREN_DURATION_MS = 200000; 
 
+//Time zone
+const String POSIX_RULE = "CET-1CEST,M3.5.0,M10.5.0/3"; //Set your POSIX time zone
+
 //Arm / Disarm Button
 const int PIN_BTN_ARM  = 27; 
-
-
 
 
 #endif

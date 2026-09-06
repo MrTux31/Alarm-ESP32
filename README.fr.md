@@ -2,7 +2,7 @@
 
 **[English](README.md) | [Français](README.fr.md)**
 
-Un système d'alarme domestique intelligent basé sur l'ESP32, utilisable en **mode autonome** ou **connecté à internet** avec contrôle distant complet via [Blynk](https://blynk.io/).
+Un système d'alarme domestique intelligent basé sur l'ESP32, utilisable en **mode autonome** ou **connecté à internet** avec contrôle distant complet via la plateforme d'IoT [Blynk](https://blynk.io/).
 
 Le dépôt contient un projet PlatformIO complet à sa racine.
 
